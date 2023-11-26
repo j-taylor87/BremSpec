@@ -461,7 +461,7 @@ if __name__ == "__main__":
         font = FontProperties()
         font.set_family('Tahoma')
 
-        fig, ax = plt.subplots(figsize=(12, 7))
+        fig, ax = plt.subplots(figsize=(12, 8))
    
         x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
         y_axis_limit = [0, 1] 
