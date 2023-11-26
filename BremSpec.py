@@ -253,7 +253,6 @@ def filter_selection_and_input(base_energy_array, filter_number, filters,default
 
     return mass_atten_coeff, filter_material_selection, density, filter_thickness
 
-
 # Set streamlit page to wide mode
 st.set_page_config(layout="wide")
 
@@ -369,7 +368,6 @@ if __name__ == "__main__":
                 exposure_time = st.slider("Exposure Time (s)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.2f")
                 current_time_product_display = st.write("Current-Time Product (mAs): ", round(tube_current*exposure_time,0))
 
-
         # Define a base energy array that all materials should conform to
         num_points = 1000 # higher number of points gives smoother plots but takes longer to compute
         energy_base_array = np.linspace(0, 150, num=num_points)  # Example: from 1 to 200 with 200 points
@@ -409,8 +407,6 @@ if __name__ == "__main__":
 
         # Dropdown for selecting plot style
         selected_style = st.selectbox("Select Plot Style", plot_styles)
-
-
 
     with col2: # elements in col2 will be displayed in the right column
 
@@ -465,7 +461,7 @@ if __name__ == "__main__":
         font = FontProperties()
         font.set_family('Tahoma')
 
-        fig, ax = plt.subplots(figsize=(10, 7))
+        fig, ax = plt.subplots(figsize=(9, 8))
    
         x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
         y_axis_limit = [0, 1] 
