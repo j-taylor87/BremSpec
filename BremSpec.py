@@ -516,7 +516,7 @@ if __name__ == "__main__":
             # Add annotation for the median energy
             ax.annotate(f"Median Beam Energy: {median_energy_at_50pct_auc:.2f} keV", color="cyan", 
                         xy=(median_energy_at_50pct_auc, median_height / 2),
-                        xytext=(65, -20),  # Adjust these values to position your text
+                        xytext=(68, -20),  # Adjust these values to position your text
                         textcoords="offset points", 
                         ha="center",
                         fontsize=8,
