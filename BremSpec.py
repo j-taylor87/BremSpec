@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 plt.rcParams["font.family"] = "sans-serif"
 plt.rcParams["font.sans-serif"] = "Tahoma"
-from scipy.interpolate import interp1d, Akima1DInterpolator
-from scipy.constants import speed_of_light, elementary_charge, Planck, pi
+from scipy.interpolate import interp1d
+from scipy.constants import speed_of_light
 
 def kramers_law(Z, energy, tube_voltage, tube_voltage_max, tube_current=None, tube_current_max=None, exposure_time=None, exposure_time_max=None, current_time_product=None, current_time_product_max=None):
     """
@@ -259,14 +259,13 @@ st.set_page_config(layout="wide")
 # Main function
 if __name__ == "__main__":
     st.title("BremSpec")
-    st.write("Bremsstrahlung X-ray Spectrum Visualizer") #`Decelerate and Illuminate`
+    st.write("Bremsstrahlung X-ray Spectrum Visualiser") #`Decelerate and Illuminate`
     
     # Create two columns
     col1, col2 = st.columns([1,2.5])
 
     # List of available plot styles
-    plot_styles = ["dark_background", "ggplot", "seaborn", "classic", "bmh", "fivethirtyeight", 
-                   "Solarize_Light2", "tableau-colorblind10"]
+    plot_styles = ["ggplot", "bmh", "fivethirtyeight", "Solarize_Light2", "dark_background","classic","tableau-colorblind10"]
 
     with col1: # elements in col1will display in the left column
         #st.subheader("Input Parameters")
@@ -456,12 +455,13 @@ if __name__ == "__main__":
 
         ########## Visualise the spectrum ##########
         plt.style.use(selected_style)
+
         
         # Create a FontProperties object
         font = FontProperties()
         font.set_family('Tahoma')
 
-        fig, ax = plt.subplots(figsize=(12, 8))
+        fig, ax = plt.subplots(figsize=(12, 8),dpi=1000)
    
         x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
         y_axis_limit = [0, 1] 
@@ -510,11 +510,11 @@ if __name__ == "__main__":
             # Add a vertical line for median energy at 50% AUC
             median_index = np.where(energy_valid >= median_energy_at_50pct_auc)[0][0]
             median_height = energy_flux_normalised_filtered[median_index]
-            ax.plot([median_energy_at_50pct_auc, median_energy_at_50pct_auc], [0, median_height], color="cyan", 
+            ax.plot([median_energy_at_50pct_auc, median_energy_at_50pct_auc], [0, median_height], color="blue", 
                     linestyle="--", linewidth=0.8, label=f"Average Energy: {median_energy_at_50pct_auc:.2f} keV")
         
             # Add annotation for the median energy
-            ax.annotate(f"Median Beam Energy: {median_energy_at_50pct_auc:.2f} keV", color="cyan", 
+            ax.annotate(f"Median Beam Energy: {median_energy_at_50pct_auc:.2f} keV", color="blue", 
                         xy=(median_energy_at_50pct_auc, median_height / 2),
                         xytext=(68, -20),  # Adjust these values to position your text
                         textcoords="offset points", 
