@@ -147,6 +147,19 @@ def add_characteristic_peaks(energy, energy_flux_normalised_filtered, energy_cha
     return energy_combined[sorted_indices], intensity_combined[sorted_indices]
 
 def adjust_duplicates(energy_array):
+    """
+    Adjusts duplicate values in an array by adding a small increment to ensure uniqueness.
+
+    Parameters:
+    energy_array (array-like): Input array containing energy values.
+
+    Returns:
+    numpy.ndarray: A sorted array with adjusted values to ensure uniqueness.
+
+    This function takes an array of energy values and checks for duplicates. If duplicates are found,
+    it adds a small increment to each duplicate to make them unique while preserving the order.
+    The resulting array is sorted and returned.
+    """
     unique_energy = {}
     increment = 0.0001  # Small increment to ensure uniqueness
 
@@ -167,20 +180,24 @@ def filter_selection_and_input(base_energy_array, filter_number, filters,default
     It then interpolates the mass attenuation coefficients of the selected material to match a base energy array.
 
     Parameters:
-    base_energy_array (np.array): An array of energy values to which the mass attenuation coefficients will be interpolated.
+    base_energy_array (np.array): An array of energy values (in keV) to which the mass attenuation coefficients will be interpolated.
     filter_number (int): The number of the filter (used for labeling in the user interface).
     filters (list): A list of filter materials available for selection.
+    default (str, optional): The default filter material to be preselected. Default is None.
 
     Returns:
-    tuple: A tuple containing interpolated mass attenuation coefficients, selected filter material, density of the material, and the selected thickness.
+    tuple: A tuple containing:
+      interpolated_mass_attenuation (np.array): The interpolated mass attenuation coefficients.
+      selected_filter (str): The selected filter material.
+      filter_density (float): The density of the selected material (in g/cm^3).
+      selected_thickness (float): The selected thickness of the filter (in mm).
 
-    The function handles different materials with specific energy arrays and mass attenuation coefficients retrieved from NIST"s XCOM database.
-    https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html
-    It uses numpy"s interpolation method to align the coefficients with the base energy array.
+    The function handles different materials with specific energy arrays and mass attenuation coefficients retrieved from NIST's XCOM database.
+    For more information, refer to: https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html
+    It uses numpy's interpolation method to align the coefficients with the base energy array.
     """
     
-    # Use the default if provided, otherwise default to the first item in the list
-
+    # Use the default filter if provided, otherwise default to the first item in the list
     default_index = filters.index(default) if default else 0
     filter_material_selection = st.selectbox(f"Filter {filter_number} Material", filters, index=default_index, key=f"filter_material_{filter_number}")
   
@@ -265,7 +282,7 @@ if __name__ == "__main__":
     col1, col2 = st.columns([1,2.5])
 
     # List of available plot styles
-    plot_styles = ["ggplot", "bmh", "fivethirtyeight", "Solarize_Light2", "dark_background","classic","tableau-colorblind10"]
+    plot_styles = ["classic","bmh","ggplot","Solarize_Light2","dark_background"]
 
     with col1: # elements in col1will display in the left column
         #st.subheader("Input Parameters")
@@ -461,7 +478,7 @@ if __name__ == "__main__":
         font = FontProperties()
         font.set_family('Tahoma')
 
-        fig, ax = plt.subplots(figsize=(12, 8),dpi=1000)
+        fig, ax = plt.subplots(figsize=(12, 8),dpi=2000)
    
         x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
         y_axis_limit = [0, 1] 
