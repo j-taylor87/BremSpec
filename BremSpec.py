@@ -478,7 +478,7 @@ if __name__ == "__main__":
         font = FontProperties()
         font.set_family('Tahoma')
 
-        fig, ax = plt.subplots(figsize=(12, 8),dpi=2000)
+        fig, ax = plt.subplots(figsize=(12, 8),dpi=600)
    
         x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
         y_axis_limit = [0, 1] 
@@ -521,17 +521,17 @@ if __name__ == "__main__":
             ax.plot(energy_valid, energy_flux_normalised_filtered,linestyle="-",linewidth=1.5,color="tomato")
 
         # Fill underneath the curve
-        ax.fill_between(energy_valid, 0, energy_flux_normalised_filtered, color='tomato', alpha=0.4)
+        ax.fill_between(energy_valid, 0, energy_flux_normalised_filtered, color="tomato", alpha=0.4)
 
         if show_median_energy:
             # Add a vertical line for median energy at 50% AUC
             median_index = np.where(energy_valid >= median_energy_at_50pct_auc)[0][0]
             median_height = energy_flux_normalised_filtered[median_index]
-            ax.plot([median_energy_at_50pct_auc, median_energy_at_50pct_auc], [0, median_height], color="blue", 
+            ax.plot([median_energy_at_50pct_auc, median_energy_at_50pct_auc], [0, median_height], color="navy", 
                     linestyle="--", linewidth=0.8, label=f"Average Energy: {median_energy_at_50pct_auc:.2f} keV")
         
             # Add annotation for the median energy
-            ax.annotate(f"Median Beam Energy: {median_energy_at_50pct_auc:.2f} keV", color="blue", 
+            ax.annotate(f"Median Beam Energy: {median_energy_at_50pct_auc:.2f} keV", color="navy", 
                         xy=(median_energy_at_50pct_auc, median_height / 2),
                         xytext=(68, -20),  # Adjust these values to position your text
                         textcoords="offset points", 
