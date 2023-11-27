@@ -1,7 +1,7 @@
 # BremSpec
 Interactive Bremsstrahlung X-ray Spectrum Visualiser built using streamlit.
 
-streamlit app at https://bremspec-h4c3i2vapp4xt5hyr4wkego.streamlit.app/
+streamlit app at https://bremspec.streamlit.app/
 
 Select an X-ray imaging modality, filter materials, and technique factors (kV, mA, s) to see how these affect the shape of the Bremsstrahlung X-ray spectrum.
 The characteristic X-rays of the target material, median beam energy, and area under the Bremsstrahlung 
