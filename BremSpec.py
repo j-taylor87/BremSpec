@@ -292,7 +292,7 @@ if __name__ == "__main__":
 
         # Set factors based on modality
         if modality == "General X-ray":
-            tube_voltage_max = 150.0 # kV
+            tube_voltage_max = 125.0 # kV
             tube_voltage_min = 40.0
             tube_voltage_default = 70.0 
             tube_current_max = 500.0 # mA
@@ -382,10 +382,10 @@ if __name__ == "__main__":
             tube_voltage = st.slider("Tube Voltage (kV)", min_value=int(tube_voltage_min), max_value=int(tube_voltage_max), value=int(tube_voltage_default))
             tube_current = st.slider("Tube Current (mA)", min_value=tube_current_min, max_value=tube_current_max, value=tube_current_default,format="%.1f")
             if modality == "CT":
-                exposure_time = st.slider("Rotation Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.2f")
+                exposure_time = st.slider("Rotation Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.0f")
             else:
-                exposure_time = st.slider("Exposure Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.2f")
-                current_time_product_display = st.write("Current-Time Product (mAs): ", round(tube_current*exposure_time,0))
+                exposure_time = st.slider("Exposure Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.0f")
+                current_time_product_display = st.write("Current-Time Product (mAs): ", round(tube_current*exposure_time / 1000,0))
 
         # Define a base energy array that all materials should conform to
         num_points = 1000 # higher number of points gives smoother plots but takes longer to compute
