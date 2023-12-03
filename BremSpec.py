@@ -47,8 +47,8 @@ def kramers_law(Z, energy, tube_voltage, tube_voltage_max, tube_current=None, tu
         energy_flux = (k_l * Z * current_time_product) / (2.0 * np.pi * speed_of_light) * (tube_voltage - energy_valid)
         energy_flux_max = (k_l * Z * current_time_product_max) / (2.0 * np.pi * speed_of_light) * (tube_voltage_max - energy_valid)
     else:
-        energy_flux = (k_l * Z * tube_current * exposure_time) / (2.0 * np.pi * speed_of_light) * (tube_voltage - energy_valid)
-        energy_flux_max = (k_l * Z * tube_current_max * exposure_time_max) / (2.0 * np.pi * speed_of_light) * (tube_voltage_max - energy_valid)
+        energy_flux = (k_l * Z * tube_current * exposure_time / 1000) / (2.0 * np.pi * speed_of_light) * (tube_voltage - energy_valid)
+        energy_flux_max = (k_l * Z * tube_current_max * exposure_time_max / 1000) / (2.0 * np.pi * speed_of_light) * (tube_voltage_max - energy_valid)
 
     # Normalize energy flux
     energy_flux_normalised = energy_flux / np.max(energy_flux_max)
@@ -203,7 +203,7 @@ def filter_selection_and_input(base_energy_array, filter_number, filters,default
   
     if filter_material_selection == "Al (Z=13)":
         density = 2.7  # g/cm^3
-        filter_thickness = st.slider(f"Filter {filter_number} Thickness (mm) - Al", min_value=0.0, max_value=25.0, step=0.05, value=0.0, key=f"filter_{filter_number}_thickness_Al")
+        filter_thickness = st.slider(f"Filter {filter_number} Thickness (mm) - Al", min_value=0.0, max_value=21.0, step=0.05, value=0.0, key=f"filter_{filter_number}_thickness_Al")
         energy_Al = np.array([1.0,1.5,1.56,1.56,2,2.51,4.01,5.52,7.02,8.53,10.03,11.54,13.04,14.55,16.05,17.56,19.06,20.57,22.07,23.58,25.08,26.59,28.09,29.6,31.1,32.61,34.11,35.62,37.12,38.63,40.13,41.64,43.14,44.65,46.15,47.66,49.16,50.67,52.17,53.68,55.18,56.69,58.19,59.7,61.2,62.71,64.21,65.72,67.22,68.73,70.23,71.74,73.24,74.75,76.25,77.76,79.26,80.77,82.27,83.78,85.28,86.79,88.29,89.8,91.3,92.81,94.31,95.82,97.32,98.83,100.3,101.8,103.3,104.8,106.4,107.9,109.4,110.9,112.4,113.9,115.4,116.9,118.4,119.9,121.4,122.9,124.4,125.9,127.4,128.9,130.4,131.9,133.4,134.9,136.4,138,139.5,141,142.5,144,145.5,147,148.5,150,130.4,131.9,133.4,134.9,136.4,138,139.5,141,142.5,144,145.5,147,148.5,150,200])
         mass_atten_coeff_Al = np.array([1183,400.2,360,3955,2261,1271,356.7,145.1,72.64,41.07,25.43,16.75,11.63,8.372,6.239,4.767,3.734,2.979,2.423,1.999,1.675,1.419,1.218,1.056,0.9255,0.8178,0.7294,0.6552,0.5934,0.5408,0.4963,0.4579,0.4251,0.3965,0.3717,0.35,0.331,0.3141,0.2993,0.286,0.2742,0.2636,0.2542,0.2456,0.2378,0.2308,0.2244,0.2185,0.2132,0.2083,0.2038,0.1997,0.1958,0.1923,0.189,0.1859,0.1831,0.1804,0.1779,0.1755,0.1733,0.1713,0.1693,0.1675,0.1657,0.1641,0.1625,0.161,0.1596,0.1582,0.1569,0.1557,0.1545,0.1533,0.1522,0.1512,0.1502,0.1492,0.1483,0.1474,0.1465,0.1456,0.1448,0.144,0.1432,0.1425,0.1418,0.141,0.1404,0.1397,0.139,0.1384,0.1378,0.1372,0.1366,0.136,0.1354,0.1348,0.1343,0.1338,0.1332,0.1327,0.1322,0.1317,0.139,0.1384,0.1378,0.1372,0.1366,0.136,0.1354,0.1348,0.1343,0.1338,0.1332,0.1327,0.1322,0.1317,0.1188])
         #mass_atten_coeff = np.interp(base_energy_array, energy_Al, mass_atten_coeff_Al)
@@ -215,7 +215,7 @@ def filter_selection_and_input(base_energy_array, filter_number, filters,default
 
     elif filter_material_selection == "Cu (Z=29)":
         density = 8.96  # g/cm^3
-        filter_thickness = st.slider(f"Filter {filter_number} Thickness (mm) - Cu", min_value=0.0, max_value=3.0, step=0.05,value=0.0, key=f"filter_{filter_number}_thickness_Cu")
+        filter_thickness = st.slider(f"Filter {filter_number} Thickness (mm) - Cu", min_value=0.0, max_value=1.0, step=0.01,value=0.0, key=f"filter_{filter_number}_thickness_Cu")
         energy_Cu = np.array([1.0,1.096,1.096,1.5,2,2.51,4.01,5.52,7.02,8.53,10.03,11.54,13.04,14.55,16.05,17.56,19.06,20.57,22.07,23.58,25.08,26.59,28.09,29.6,31.1,32.61,34.11,35.62,37.12,38.63,40.13,41.64,43.14,44.65,46.15,47.66,49.16,50.67,52.17,53.68,55.18,56.69,58.19,59.7,61.2,62.71,64.21,65.72,67.22,68.73,70.23,71.74,73.24,74.75,76.25,77.76,79.26,80.77,82.27,83.78,85.28,86.79,88.29,89.8,91.3,92.81,94.31,95.82,97.32,98.83,100.3,101.8,103.3,104.8,106.4,107.9,109.4,110.9,112.4,113.9,115.4,116.9,118.4,119.9,121.4,122.9,124.4,125.9,127.4,128.9,130.4,131.9,133.4,134.9,136.4,138,139.5,141,142.5,144,145.5,147,148.5,150,127.4,128.9,130.4,131.9,133.4,134.9,136.4,138,139.5,141,142.5,144,145.5,147,148.5,150,200])
         mass_atten_coeff_Cu = np.array([10570,8240,9340,4413,2149,1187,341.6,142.4,72.98,42.32,213,149.2,107.5,79.57,60.77,47.5,37.92,30.7,25.23,20.95,17.6,14.91,12.76,10.99,9.543,8.335,7.33,6.476,5.756,5.136,4.606,4.146,3.748,3.398,3.094,2.824,2.587,2.375,2.188,2.02,1.871,1.736,1.615,1.505,1.406,1.316,1.235,1.16,1.092,1.03,0.9727,0.9201,0.872,0.8274,0.7865,0.7484,0.7134,0.6806,0.6505,0.6222,0.5961,0.5716,0.5488,0.5274,0.5075,0.4888,0.4713,0.4548,0.4394,0.4248,0.4111,0.3981,0.386,0.3745,0.3636,0.3533,0.3436,0.3343,0.3256,0.3173,0.3094,0.3019,0.2948,0.288,0.2815,0.2754,0.2695,0.2639,0.2586,0.2534,0.2485,0.2439,0.2394,0.2351,0.231,0.227,0.2233,0.2196,0.2161,0.2128,0.2096,0.2064,0.2035,0.2006,0.2586,0.2534,0.2485,0.2439,0.2394,0.2351,0.231,0.227,0.2233,0.2196,0.2161,0.2128,0.2096,0.2064,0.2035,0.2006,0.1437])
         #mass_atten_coeff = np.interp(base_energy_array, energy_Cu, mass_atten_coeff_Cu)
@@ -292,16 +292,16 @@ if __name__ == "__main__":
 
         # Set factors based on modality
         if modality == "General X-ray":
-            tube_voltage_max = 125.0
+            tube_voltage_max = 150.0 # kV
             tube_voltage_min = 40.0
-            tube_voltage_default = 70.0
-            tube_current_max = 600.0
+            tube_voltage_default = 70.0 
+            tube_current_max = 500.0 # mA
             tube_current_min = 0.0
             tube_current_default = 100.0
-            exposure_time_max = 3.0
+            exposure_time_max = 1000.0 # ms
             exposure_time_min = 0.0
             exposure_time_default = 1.0
-            current_time_product_max = 500.0
+            current_time_product_max = 500.0 # mAs
             current_time_product_min = 0.0
             current_time_product_default = 100.0
             filters = ["Al (Z=13)", "Cu (Z=29)"]
@@ -311,10 +311,10 @@ if __name__ == "__main__":
             tube_voltage_max = 50.0
             tube_voltage_min = 10.0
             tube_voltage_default = 30.0
-            tube_current_max = 200.0
+            tube_current_max = 100.0
             tube_current_min = 0.0
             tube_current_default = 100.0
-            exposure_time_max = 1.0
+            exposure_time_max = 200.0
             exposure_time_min = 0.0
             exposure_time_default = 0.2
             current_time_product_max = 1.0
@@ -324,14 +324,17 @@ if __name__ == "__main__":
             automatic_mode = "Automatic Exposure Control (AEC) (WIP)"
 
         elif modality == "Fluoroscopy":
-            tube_voltage_max = 125.0
+            tube_voltage_max = 133.0
             tube_voltage_min = 40.0
             tube_voltage_default = 50.0
             tube_current_max = 1000.0
             tube_current_min = 0.0
             tube_current_default = 100.0
-            exposure_time_max = 1.0
+            exposure_time_max = 100
             exposure_time_min = 0.0
+            pulse_width_max = 20.0 # ms
+            pulse_width_min = 0.0
+            pulse_width_default = 8.0
             exposure_time_default = 0.1
             filters = ["Al (Z=13)", "Cu (Z=29)"]
             automatic_mode = "Automatic Dose Rate Control (ADRC) (WIP)"
@@ -379,9 +382,9 @@ if __name__ == "__main__":
             tube_voltage = st.slider("Tube Voltage (kV)", min_value=int(tube_voltage_min), max_value=int(tube_voltage_max), value=int(tube_voltage_default))
             tube_current = st.slider("Tube Current (mA)", min_value=tube_current_min, max_value=tube_current_max, value=tube_current_default,format="%.1f")
             if modality == "CT":
-                exposure_time = st.slider("Rotation Time (s)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.2f")
+                exposure_time = st.slider("Rotation Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.2f")
             else:
-                exposure_time = st.slider("Exposure Time (s)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.2f")
+                exposure_time = st.slider("Exposure Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.2f")
                 current_time_product_display = st.write("Current-Time Product (mAs): ", round(tube_current*exposure_time,0))
 
         # Define a base energy array that all materials should conform to
