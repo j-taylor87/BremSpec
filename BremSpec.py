@@ -172,6 +172,38 @@ def adjust_duplicates(energy_array):
 
     return np.sort(energy_array)
 
+def interpolate_mass_atten_coeff(base_energy_array, energy_array, mass_atten_coeff):
+    """
+    Interpolates the mass attenuation coefficients for a given array of base energies.
+
+    This function takes an array of base energies and uses linear interpolation to
+    find the corresponding mass attenuation coefficients based on a provided array
+    of energies and their known mass attenuation coefficients. It handles duplicate
+    energy values and extrapolates values for energies not in the provided range.
+
+    Parameters:
+    base_energy_array (numpy.ndarray): An array of energies for which the mass 
+      attenuation coefficients need to be interpolated.
+    energy_array (numpy.ndarray): The array of energies corresponding to the provided 
+      mass attenuation coefficients. This array is used as the base for interpolation.
+    mass_atten_coeff (numpy.ndarray): An array of known mass attenuation coefficients 
+      corresponding to the energies in `energy_array`.
+
+    Returns:
+    numpy.ndarray: An array of interpolated mass attenuation coefficients corresponding 
+      to the energies in `base_energy_array`.
+    """
+    # Adjust duplicate values in the energy array for accurate interpolation
+    energy = adjust_duplicates(energy_array)
+
+    # Create a linear interpolation function
+    interpolate = interp1d(energy, mass_atten_coeff, kind="linear", fill_value="extrapolate")
+
+    # Interpolate the mass attenuation coefficients
+    mass_atten_coeff_interpolated = interpolate(base_energy_array)
+
+    return mass_atten_coeff_interpolated
+
 def filter_selection_and_input(base_energy_array, filter_number, filters,default=None):
     """
     Selects a filter material and thickness, and interpolates its mass attenuation coefficients.
@@ -207,11 +239,7 @@ def filter_selection_and_input(base_energy_array, filter_number, filters,default
         energy_Al = np.array([1.0,1.5,1.56,1.56,2,2.51,4.01,5.52,7.02,8.53,10.03,11.54,13.04,14.55,16.05,17.56,19.06,20.57,22.07,23.58,25.08,26.59,28.09,29.6,31.1,32.61,34.11,35.62,37.12,38.63,40.13,41.64,43.14,44.65,46.15,47.66,49.16,50.67,52.17,53.68,55.18,56.69,58.19,59.7,61.2,62.71,64.21,65.72,67.22,68.73,70.23,71.74,73.24,74.75,76.25,77.76,79.26,80.77,82.27,83.78,85.28,86.79,88.29,89.8,91.3,92.81,94.31,95.82,97.32,98.83,100.3,101.8,103.3,104.8,106.4,107.9,109.4,110.9,112.4,113.9,115.4,116.9,118.4,119.9,121.4,122.9,124.4,125.9,127.4,128.9,130.4,131.9,133.4,134.9,136.4,138,139.5,141,142.5,144,145.5,147,148.5,150,130.4,131.9,133.4,134.9,136.4,138,139.5,141,142.5,144,145.5,147,148.5,150,200])
         mass_atten_coeff_Al = np.array([1183,400.2,360,3955,2261,1271,356.7,145.1,72.64,41.07,25.43,16.75,11.63,8.372,6.239,4.767,3.734,2.979,2.423,1.999,1.675,1.419,1.218,1.056,0.9255,0.8178,0.7294,0.6552,0.5934,0.5408,0.4963,0.4579,0.4251,0.3965,0.3717,0.35,0.331,0.3141,0.2993,0.286,0.2742,0.2636,0.2542,0.2456,0.2378,0.2308,0.2244,0.2185,0.2132,0.2083,0.2038,0.1997,0.1958,0.1923,0.189,0.1859,0.1831,0.1804,0.1779,0.1755,0.1733,0.1713,0.1693,0.1675,0.1657,0.1641,0.1625,0.161,0.1596,0.1582,0.1569,0.1557,0.1545,0.1533,0.1522,0.1512,0.1502,0.1492,0.1483,0.1474,0.1465,0.1456,0.1448,0.144,0.1432,0.1425,0.1418,0.141,0.1404,0.1397,0.139,0.1384,0.1378,0.1372,0.1366,0.136,0.1354,0.1348,0.1343,0.1338,0.1332,0.1327,0.1322,0.1317,0.139,0.1384,0.1378,0.1372,0.1366,0.136,0.1354,0.1348,0.1343,0.1338,0.1332,0.1327,0.1322,0.1317,0.1188])
         #mass_atten_coeff = np.interp(base_energy_array, energy_Al, mass_atten_coeff_Al)
-        
-        # Adjust duplicate values slightly so interpolation works (x-values must be unique)
-        energy_Al = adjust_duplicates(energy_Al)
-        interpolate_Al = interp1d(energy_Al, mass_atten_coeff_Al, kind="linear", fill_value="extrapolate")
-        mass_atten_coeff = interpolate_Al(base_energy_array)
+        mass_atten_coeff = interpolate_mass_atten_coeff(base_energy_array, energy_Al, mass_atten_coeff_Al)
 
     elif filter_material_selection == "Cu (Z=29)":
         density = 8.96  # g/cm^3
@@ -268,7 +296,73 @@ def filter_selection_and_input(base_energy_array, filter_number, filters,default
         interpolate_Sn = interp1d(energy_Sn, mass_atten_coeff_Sn, kind="linear", fill_value="extrapolate")
         mass_atten_coeff = interpolate_Sn(base_energy_array)
 
-    return mass_atten_coeff, filter_material_selection, density, filter_thickness
+    return mass_atten_coeff, filter_material_selection, density, filter_thickness, hvl
+
+def calculate_auc_percentage(energy_flux_normalised_filtered, energy_valid, energy_lower_bound, energy_upper_bound, tube_voltage_max):
+    """
+    Calculate the AUC percentage for a filtered energy spectrum within a specified energy range.
+
+    Parameters:
+    - energy_flux_normalised_filtered (numpy.ndarray): Normalized filtered energy flux.
+    - energy_valid (numpy.ndarray): Valid energy values.
+    - energy_lower_bound (float): Lower bound of the energy range of interest.
+    - energy_upper_bound (float): Upper bound of the energy range of interest.
+    - tube_voltage_max (float): Maximum tube voltage.
+
+    Returns:
+    - auc_percentage (float): AUC percentage within the specified energy range.
+    """
+    # Indices for the energy range of interest
+    lower_index = np.searchsorted(energy_valid, energy_lower_bound, side="left")
+    upper_index = np.searchsorted(energy_valid, energy_upper_bound, side="right")
+
+    # Calculate the AUC for the unfiltered spectrum at maximum technique factor values
+    auc_unfiltered = 0.5 * tube_voltage_max * 1.0
+
+    # Calculate AUC within the specified energy range
+    auc = np.trapz(energy_flux_normalised_filtered[lower_index:upper_index], energy_valid[lower_index:upper_index])
+
+    # Calculate AUC percentage
+    auc_percentage = (auc / auc_unfiltered) * 100
+
+    return auc_percentage
+
+def calculate_median_energy_and_hvl(energy_valid, energy_flux_normalised_filtered, density, energy_array, mass_atten_coeff):
+    """
+    Calculate the Half Value Layer (HVL) for the median energy of a filtered energy spectrum.
+
+    Parameters:
+    energy_valid (numpy.ndarray): Valid energy values.
+    energy_flux_normalised_filtered (numpy.ndarray): Normalized filtered energy flux.
+    density (float): Density of the filter material.
+    energy_array (numpy.ndarray): The array of energies corresponding to the provided mass attenuation coefficients.
+    mass_atten_coeff (numpy.ndarray): An array of known mass attenuation coefficients corresponding to the energies in `energy_array`.
+
+    Returns:
+    hvl_median (float): HVL for the median energy, or None if median energy is not found.
+    """
+    # Calculate the cumulative sum of the energy fluxes
+    cumulative_energy_flux = np.cumsum(energy_flux_normalised_filtered * np.diff(energy_valid, prepend=0))
+
+    # Normalize by the total AUC
+    normalised_cumulative_energy_flux = cumulative_energy_flux / np.trapz(energy_flux_normalised_filtered, energy_valid)
+
+    # Find the index for median energy
+    indices = np.where(normalised_cumulative_energy_flux >= 0.5)[0]
+    if len(indices) > 0:
+        median_index = indices[0]
+        median_energy_at_50pct_auc = energy_valid[median_index]
+
+        # Interpolate the mass attenuation coefficient for the median energy
+        mass_atten_coeff_median = interpolate_mass_atten_coeff([median_energy_at_50pct_auc], energy_array, mass_atten_coeff)[0]
+
+        # Calculate the HVL for the median energy
+        hvl_median = -np.log(0.5) / (mass_atten_coeff_median * density)
+        return hvl_median
+    else:
+        # Handle the case where no median is found
+        return None  # Return None when median is not found
+
 
 # Set streamlit page to wide mode
 st.set_page_config(layout="wide")
@@ -469,15 +563,19 @@ if __name__ == "__main__":
         if len(indices) > 0:
             median_index = indices[0]
             median_energy_at_50pct_auc = energy_valid[median_index]
+
+            # Calculate the HVL for the median energy
+            mass_atten_coeff_median = interpolate_Al(median_energy_at_50pct_auc)
+            hvl_median = -np.log(0.5) / (mass_atten_coeff_median * density)
+
         else:
             # Handle the case where no median is found or interpolate
             median_energy_at_50pct_auc = np.interp(0.5, normalised_cumulative_energy_flux, energy_valid)
 
         ########## Visualise the spectrum ##########
         plt.style.use(selected_style)
-
         
-        # Create a FontProperties object
+        # Create a FontProperties object and set the font
         font = FontProperties()
         font.set_family('Tahoma')
 
