@@ -653,7 +653,7 @@ if __name__ == "__main__":
         ax.set_xlim(x_axis_limit)
         ax.set_ylim([y_axis_min, y_axis_max])
         ax.set_xticks(np.arange(0, tube_voltage_max+1, 5))
-        ax.set_yticks(np.arange(0, 1.1, 0.1))
+        ax.set_yticks(np.arange(0, y_axis_max, 0.1))
 
         #ax.set_title(f"Bremsstrahlung Spectrum for Z={Z}")
 
