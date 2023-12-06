@@ -396,14 +396,14 @@ if __name__ == "__main__":
 
         # Set factors based on modality
         if modality == "General X-ray":
-            tube_voltage_max = 125.0 # kV
+            tube_voltage_max = 150.0 # kV
             tube_voltage_min = 40.0
             tube_voltage_default = 70.0 
             tube_current_max = 500.0 # mA
-            tube_current_min = 0.0
+            tube_current_min = 1.0
             tube_current_default = 100.0
             exposure_time_max = 1000.0 # ms
-            exposure_time_min = 0.0
+            exposure_time_min = 1.0
             exposure_time_default = 1.0
             current_time_product_max = 500.0 # mAs
             current_time_product_min = 0.0
@@ -416,13 +416,13 @@ if __name__ == "__main__":
             tube_voltage_min = 10.0
             tube_voltage_default = 30.0
             tube_current_max = 100.0
-            tube_current_min = 0.0
+            tube_current_min = 1.0
             tube_current_default = 100.0
             exposure_time_max = 200.0
-            exposure_time_min = 0.0
+            exposure_time_min = 1.0
             exposure_time_default = 0.2
-            current_time_product_max = 1.0
-            current_time_product_min = 0.0
+            current_time_product_max = 100.0
+            current_time_product_min = 1.0
             current_time_product_default = 20.0
             filters = ["Al (Z=13)","Mo (Z=42)", "Rh (Z=45)", "Ag (Z=47)"]
             automatic_mode = "Automatic Exposure Control (AEC) (WIP)"
@@ -431,15 +431,15 @@ if __name__ == "__main__":
             tube_voltage_max = 133.0
             tube_voltage_min = 40.0
             tube_voltage_default = 50.0
-            tube_current_max = 1000.0
-            tube_current_min = 0.0
+            tube_current_max = 500.0
+            tube_current_min = 1.0
             tube_current_default = 100.0
-            exposure_time_max = 100
-            exposure_time_min = 0.0
-            pulse_width_max = 20.0 # ms
-            pulse_width_min = 0.0
-            pulse_width_default = 8.0
+            exposure_time_max = 100.0
+            exposure_time_min = 1.0
             exposure_time_default = 0.1
+            pulse_width_max = 20.0 # ms
+            pulse_width_min = 1.0
+            pulse_width_default = 8.0
             filters = ["Al (Z=13)", "Cu (Z=29)"]
             automatic_mode = "Automatic Dose Rate Control (ADRC) (WIP)"
 
@@ -469,6 +469,7 @@ if __name__ == "__main__":
         if mode: # Automatic mode
             
             tube_voltage = st.slider("Tube Voltage (kV)", min_value=int(tube_voltage_min), max_value=int(tube_voltage_max), value=int(tube_voltage_default))
+            scale_axes_with_kv = st.checkbox('Scale axes with selected kV')
             
             if modality == "CT":
                 tube_current = 1/tube_voltage**5.0
@@ -484,12 +485,17 @@ if __name__ == "__main__":
 
         else: # Manual mode
             tube_voltage = st.slider("Tube Voltage (kV)", min_value=int(tube_voltage_min), max_value=int(tube_voltage_max), value=int(tube_voltage_default))
+            scale_axes_with_kv = st.checkbox('Scale axes with selected kV')
             tube_current = st.slider("Tube Current (mA)", min_value=tube_current_min, max_value=tube_current_max, value=tube_current_default,format="%.1f")
             if modality == "CT":
                 exposure_time = st.slider("Rotation Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.0f")
             else:
                 exposure_time = st.slider("Exposure Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.0f")
                 current_time_product_display = st.write("Current-Time Product (mAs): ", round(tube_current*exposure_time / 1000,0))
+
+        # Set the maximum tube voltage based selected kV or not
+        if scale_axes_with_kv:
+            tube_voltage_max = tube_voltage
 
         # Define a base energy array that all materials should conform to
         num_points = 1000 # higher number of points gives smoother plots but takes longer to compute
@@ -535,12 +541,14 @@ if __name__ == "__main__":
 
         # Checkbox for turning grid on/off
         show_grid = st.checkbox("Show Grid", value=False)
+
         
         # Calculate the spectrum and get energy values below the tube voltage
         if mode: # Automatic mode
-            energy_valid, energy_flux_normalised = kramers_law(Z, energy_base_array, tube_voltage, tube_voltage_max, current_time_product=current_time_product,current_time_product_max=current_time_product_max)
+            energy_valid, energy_flux_normalised = kramers_law(Z, energy_base_array, tube_voltage, tube_voltage, current_time_product=current_time_product,current_time_product_max=current_time_product_max)
+
         else: # Manual mode
-            energy_valid, energy_flux_normalised = kramers_law(Z, energy_base_array, tube_voltage, tube_voltage_max, tube_current, tube_current_max, exposure_time, exposure_time_max)
+            energy_valid, energy_flux_normalised = kramers_law(Z, energy_base_array, tube_voltage, tube_voltage, tube_current, tube_current_max, exposure_time, exposure_time_max)
 
         # Calculate the filtered spectrum
         energy_flux_normalised_filtered = energy_flux_normalised * relative_attenuation_mass_coeff(energy_base_array,filter_1_density, filter_1_thickness, mass_atten_coeff_1,tube_voltage) * relative_attenuation_mass_coeff(energy_base_array,filter_2_density, filter_2_thickness, mass_atten_coeff_2,tube_voltage)
@@ -560,6 +568,12 @@ if __name__ == "__main__":
 
         fig, ax = plt.subplots(figsize=(12, 8),dpi=600)
    
+        # # Determine x-axis limits based on checkbox state
+        # if scale_axes_with_kv:
+        #     x_axis_limit = [0, tube_voltage]
+        # else:
+        #     x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
+
         x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
         y_axis_limit = [0, 1] 
 
@@ -622,15 +636,15 @@ if __name__ == "__main__":
             )
             
         # Annotate the AUC percentage on the plot
-        ax.annotate(f"Unfiltered AUC at Max. Factors: {auc_percentage:.0f}%", color = "k",
-                    xy=(0.69, 0.95), 
+        ax.annotate(f"Unfiltered AUC at max mAs and {tube_voltage} keV: {auc_percentage:.0f}%", color = "k",
+                    xy=(0.68, 0.95), 
                     xycoords="axes fraction", 
                     fontsize=10,
                     fontproperties=font,
                     bbox=dict(boxstyle=None, fc="0.9"))
 
-        ax.set_xlabel("Photon Energy (keV)",fontname="Tahoma", fontsize=12)
-        ax.set_ylabel("Normalised Energy Flux",fontname="Arial", fontsize=12)
+        ax.set_xlabel("Photon Energy E (keV)",fontname="Tahoma", fontsize=12)
+        ax.set_ylabel("Relative Energy Flux",fontname="Tahoma", fontsize=12)
         ax.set_xlim(x_axis_limit)
         ax.set_ylim(y_axis_limit)
         ax.set_xticks(np.arange(0, tube_voltage_max+1, 5))
