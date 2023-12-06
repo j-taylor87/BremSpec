@@ -629,7 +629,7 @@ if __name__ == "__main__":
             )
             
         # Annotate the AUC percentage on the plot
-        ax.annotate(f"Unfiltered AUC at max mAs and {tube_voltage} keV: {auc_percentage:.0f}%", color = "k",
+        ax.annotate(f"Unfiltered AUC at max mAs and {tube_voltage} keV: {auc_percentage:.2f}%", color = "k",
                     xy=(0.68, 0.95), 
                     xycoords="axes fraction", 
                     fontsize=10,
@@ -641,7 +641,7 @@ if __name__ == "__main__":
         ax.set_xlim(x_axis_limit)
         ax.set_ylim([0, y_axis_max])
         ax.set_xticks(np.arange(0, tube_voltage_max+1, 5))
-        ax.set_yticks(np.arange(0, y_axis_max, 0.1))
+        ax.set_yticks(np.arange(0, y_axis_max+0.05, 0.05))
 
         #ax.set_title(f"Bremsstrahlung Spectrum for Z={Z}")
 
