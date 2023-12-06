@@ -629,7 +629,7 @@ if __name__ == "__main__":
             )
             
         # Annotate the AUC percentage on the plot
-        ax.annotate(f"Unfiltered AUC at max mAs and {tube_voltage} keV: {auc_percentage:.2f}%", color = "k",
+        ax.annotate(f"Unfiltered AUC at max mAs and max (or selected) kV: {auc_percentage:.2f}%", color = "k",
                     xy=(0.68, 0.95), 
                     xycoords="axes fraction", 
                     fontsize=10,
