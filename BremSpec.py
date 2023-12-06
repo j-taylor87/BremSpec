@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 plt.rcParams["font.family"] = "sans-serif"
-plt.rcParams["font.sans-serif"] = "Tahoma"
+# plt.rcParams["font.sans-serif"] = "Tahoma"
 from scipy.interpolate import interp1d
 from scipy.constants import speed_of_light
 
@@ -564,7 +564,7 @@ if __name__ == "__main__":
         
         # Create a FontProperties object and set the font
         font = FontProperties()
-        font.set_family('Tahoma')
+        # font.set_family('Tahoma')
 
         fig, ax = plt.subplots(figsize=(12, 8),dpi=600)
    
@@ -643,8 +643,8 @@ if __name__ == "__main__":
                     fontproperties=font,
                     bbox=dict(boxstyle=None, fc="0.9"))
 
-        ax.set_xlabel("Photon Energy E (keV)",fontname="Tahoma", fontsize=12)
-        ax.set_ylabel("Relative Energy Flux",fontname="Tahoma", fontsize=12)
+        ax.set_xlabel("Photon Energy E (keV)", fontsize=12)
+        ax.set_ylabel("Relative Energy Flux", fontsize=12)
         ax.set_xlim(x_axis_limit)
         ax.set_ylim(y_axis_limit)
         ax.set_xticks(np.arange(0, tube_voltage_max+1, 5))
