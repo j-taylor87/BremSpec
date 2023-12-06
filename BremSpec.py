@@ -469,7 +469,6 @@ if __name__ == "__main__":
         if mode: # Automatic mode
             
             tube_voltage = st.slider("Tube Voltage (kV)", min_value=int(tube_voltage_min), max_value=int(tube_voltage_max), value=int(tube_voltage_default))
-            scale_axes_with_kv = st.checkbox('Scale axes with selected kV')
             
             if modality == "CT":
                 tube_current = 1/tube_voltage**5.0
@@ -485,17 +484,12 @@ if __name__ == "__main__":
 
         else: # Manual mode
             tube_voltage = st.slider("Tube Voltage (kV)", min_value=int(tube_voltage_min), max_value=int(tube_voltage_max), value=int(tube_voltage_default))
-            scale_axes_with_kv = st.checkbox('Scale axes with selected kV')
             tube_current = st.slider("Tube Current (mA)", min_value=tube_current_min, max_value=tube_current_max, value=tube_current_default,format="%.1f")
             if modality == "CT":
                 exposure_time = st.slider("Rotation Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.0f")
             else:
                 exposure_time = st.slider("Exposure Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.0f")
                 current_time_product_display = st.write("Current-Time Product (mAs): ", round(tube_current*exposure_time / 1000,0))
-
-        # Set the maximum tube voltage based selected kV or not for scaling the x-axis
-        if scale_axes_with_kv:
-            tube_voltage_max = tube_voltage
 
         # Define a base energy array that all materials should conform to
         num_points = 1000 # higher number of points gives smoother plots but takes longer to compute
@@ -542,6 +536,13 @@ if __name__ == "__main__":
         # Checkbox for turning grid on/off
         show_grid = st.checkbox("Show Grid", value=False)
 
+        # Checkbox for scaling axes with selected kV
+        scale_axes_with_kv = st.checkbox('Scale axes with selected kV')
+        
+        # Set the maximum tube voltage based selected kV or not for scaling the x-axis
+        if scale_axes_with_kv:
+            tube_voltage_max = tube_voltage
+
         # Calculate the spectrum and get energy values below the tube voltage
         if mode: # Automatic mode
             energy_valid, energy_flux_normalised = kramers_law(Z, energy_base_array, tube_voltage, tube_voltage, current_time_product=current_time_product,current_time_product_max=current_time_product_max)
@@ -568,7 +569,7 @@ if __name__ == "__main__":
         fig, ax = plt.subplots(figsize=(14, 8),dpi=600)
    
         x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
-        y_axis_max = st.number_input('Set Maximum Y-Axis Value', min_value=0.0, max_value=2.0, value=1.0)
+        y_axis_max = st.number_input('Set maximum y-axis value:', min_value=0.0, max_value=2.0, value=1.0)
 
         if show_characteristic_xray_peaks:
             # Add characteristic peaks to the spectrum
@@ -630,7 +631,7 @@ if __name__ == "__main__":
             
         # Annotate the AUC percentage on the plot
         ax.annotate(f"Unfiltered AUC at max mAs and max (or selected) kV: {auc_percentage:.2f}%", color = "k",
-                    xy=(0.68, 0.95), 
+                    xy=(0.64, 0.95), 
                     xycoords="axes fraction", 
                     fontsize=10,
                     fontproperties=font,
