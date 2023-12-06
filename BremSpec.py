@@ -417,10 +417,10 @@ if __name__ == "__main__":
             tube_voltage_default = 30.0
             tube_current_max = 100.0
             tube_current_min = 1.0
-            tube_current_default = 100.0
+            tube_current_default = 50.0
             exposure_time_max = 200.0
             exposure_time_min = 1.0
-            exposure_time_default = 0.2
+            exposure_time_default = 50.0
             current_time_product_max = 100.0
             current_time_product_min = 1.0
             current_time_product_default = 20.0
@@ -574,7 +574,13 @@ if __name__ == "__main__":
         #     x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
 
         x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
-        y_axis_limit = [0, 1] 
+        y_axis_limit = [0, 1]
+
+        # Add sliders or input boxes for y-axis range
+        y_axis_min, y_axis_max = st.slider("Select Y-Axis Range", 
+                                        min_value=0.0, 
+                                        max_value=max(energy_flux_normalised_filtered), 
+                                        value=(0.0, max(energy_flux_normalised_filtered)))
 
         if show_characteristic_xray_peaks:
             # Add characteristic peaks to the spectrum
@@ -645,7 +651,7 @@ if __name__ == "__main__":
         ax.set_xlabel("Photon Energy E (keV)", fontsize=12)
         ax.set_ylabel("Relative Energy Flux", fontsize=12)
         ax.set_xlim(x_axis_limit)
-        ax.set_ylim(y_axis_limit)
+        ax.set_ylim([y_axis_min, y_axis_max])
         ax.set_xticks(np.arange(0, tube_voltage_max+1, 5))
         ax.set_yticks(np.arange(0, 1.1, 0.1))
 
@@ -655,3 +661,5 @@ if __name__ == "__main__":
         ax.grid(show_grid)
 
         st.pyplot(fig)
+
+        
