@@ -9,7 +9,7 @@ The incident, negatively charged electrons interact with the nuclei of the targe
 This loss in electron kinetic energy is converted into X-rays (conservation of energy), which are then used for imaging.
 Read more here: https://en.wikipedia.org/wiki/Bremsstrahlung
 
-# How to use:
+## How to use:
 Select an X-ray imaging modality, filter materials, and technique factors (kV, mA, ms) to see how these affect the shape of the Bremsstrahlung X-ray spectrum.
 The characteristic X-rays of the target material and median beam energy can also be displayed. 
 The relative area under the curve (AUC), representing the total beam intensity across all available energies, either compared to the maximum kV of the modality or the selected kV, is displayed in the top-right corner of the plot.
