@@ -542,7 +542,6 @@ if __name__ == "__main__":
         # Checkbox for turning grid on/off
         show_grid = st.checkbox("Show Grid", value=False)
 
-        
         # Calculate the spectrum and get energy values below the tube voltage
         if mode: # Automatic mode
             energy_valid, energy_flux_normalised = kramers_law(Z, energy_base_array, tube_voltage, tube_voltage, current_time_product=current_time_product,current_time_product_max=current_time_product_max)
@@ -566,7 +565,7 @@ if __name__ == "__main__":
         font = FontProperties()
         # font.set_family('Tahoma')
 
-        fig, ax = plt.subplots(figsize=(12, 8),dpi=600)
+        fig, ax = plt.subplots(figsize=(14, 8),dpi=600)
    
         # # Determine x-axis limits based on checkbox state
         # if scale_axes_with_kv:
