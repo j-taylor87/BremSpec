@@ -493,7 +493,7 @@ if __name__ == "__main__":
                 exposure_time = st.slider("Exposure Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.0f")
                 current_time_product_display = st.write("Current-Time Product (mAs): ", round(tube_current*exposure_time / 1000,0))
 
-        # Set the maximum tube voltage based selected kV or not
+        # Set the maximum tube voltage based selected kV or not for scaling the x-axis
         if scale_axes_with_kv:
             tube_voltage_max = tube_voltage
 
@@ -567,20 +567,8 @@ if __name__ == "__main__":
 
         fig, ax = plt.subplots(figsize=(14, 8),dpi=600)
    
-        # # Determine x-axis limits based on checkbox state
-        # if scale_axes_with_kv:
-        #     x_axis_limit = [0, tube_voltage]
-        # else:
-        #     x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
-
         x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
-        y_axis_limit = [0, 1]
-
-        # Add sliders or input boxes for y-axis range
-        y_axis_min, y_axis_max = st.slider("Select Y-Axis Range", 
-                                        min_value=0.0, 
-                                        max_value=max(energy_flux_normalised_filtered), 
-                                        value=(0.0, max(energy_flux_normalised_filtered)))
+        y_axis_max = st.number_input('Set Maximum Y-Axis Value', min_value=0.0, max_value=2.0, value=1.0)
 
         if show_characteristic_xray_peaks:
             # Add characteristic peaks to the spectrum
@@ -651,7 +639,7 @@ if __name__ == "__main__":
         ax.set_xlabel("Photon Energy E (keV)", fontsize=12)
         ax.set_ylabel("Relative Energy Flux", fontsize=12)
         ax.set_xlim(x_axis_limit)
-        ax.set_ylim([y_axis_min, y_axis_max])
+        ax.set_ylim([0, y_axis_max])
         ax.set_xticks(np.arange(0, tube_voltage_max+1, 5))
         ax.set_yticks(np.arange(0, y_axis_max, 0.1))
 
