@@ -630,10 +630,11 @@ if __name__ == "__main__":
             )
             
         # Annotate the AUC percentage on the plot
-        ax.annotate(f"Unfiltered AUC at max mAs and max (or selected) kV: {auc_percentage:.2f}%", color = "k",
+        ax.annotate(f"Relative AUC: {auc_percentage:.2f}% (of max factors, unfiltered)", 
+                    color = "k",
                     xy=(0.64, 0.95), 
                     xycoords="axes fraction", 
-                    fontsize=10,
+                    fontsize=12,
                     fontproperties=font,
                     bbox=dict(boxstyle=None, fc="0.9"))
 
