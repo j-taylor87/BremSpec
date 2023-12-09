@@ -392,19 +392,19 @@ if __name__ == "__main__":
         #st.subheader("Input Parameters")
 
         # User input for modality
-        modality = st.selectbox("Modality", ["General X-ray", "Mammography", "Fluoroscopy","CT"])  # Add more modalities as needed
+        modality = st.selectbox("Modality", ["General X-ray", "Mammography", "Fluoroscopy (WIP)","CT (WIP)"])  # Add more modalities as needed
 
         # Set factors based on modality
         if modality == "General X-ray":
             tube_voltage_max = 150.0 # kV
             tube_voltage_min = 40.0
-            tube_voltage_default = 70.0 
+            tube_voltage_default = 80.0 
             tube_current_max = 500.0 # mA
             tube_current_min = 1.0
-            tube_current_default = 100.0
+            tube_current_default = 200.0
             exposure_time_max = 1000.0 # ms
             exposure_time_min = 1.0
-            exposure_time_default = 1.0
+            exposure_time_default = 500.0
             current_time_product_max = 500.0 # mAs
             current_time_product_min = 0.0
             current_time_product_default = 100.0
@@ -420,21 +420,21 @@ if __name__ == "__main__":
             tube_current_default = 50.0
             exposure_time_max = 200.0
             exposure_time_min = 1.0
-            exposure_time_default = 50.0
+            exposure_time_default = 100.0
             current_time_product_max = 100.0
             current_time_product_min = 1.0
             current_time_product_default = 20.0
             filters = ["Al (Z=13)","Mo (Z=42)", "Rh (Z=45)", "Ag (Z=47)"]
             automatic_mode = "Automatic Exposure Control (AEC) (WIP)"
 
-        elif modality == "Fluoroscopy":
+        elif modality == "Fluoroscopy (WIP)":
             tube_voltage_max = 133.0
             tube_voltage_min = 40.0
             tube_voltage_default = 50.0
             tube_current_max = 500.0
             tube_current_min = 1.0
             tube_current_default = 100.0
-            exposure_time_max = 100.0
+            exposure_time_max = 1000.0
             exposure_time_min = 1.0
             exposure_time_default = 0.1
             pulse_width_max = 20.0 # ms
@@ -443,7 +443,7 @@ if __name__ == "__main__":
             filters = ["Al (Z=13)", "Cu (Z=29)"]
             automatic_mode = "Automatic Dose Rate Control (ADRC) (WIP)"
 
-        elif modality == "CT":
+        elif modality == "CT (WIP)":
             tube_voltage_max = 140.0
             tube_voltage_min = 50.0
             tube_voltage_default = 120.0
