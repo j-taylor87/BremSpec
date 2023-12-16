@@ -93,12 +93,12 @@ def relative_attenuation_mass_coeff(energy, density, filter_thickness, mass_atte
 
     return attenuation_relative
 
-def add_characteristic_peaks(energy, energy_flux_normalised_filtered, energy_char, flux_peaks):
+def add_characteristic_peaks(energy, energy_flux_normalised_filtered, energy_char, flux_peaks, tube_voltage):
     """
-    Integrate characteristic X-ray peaks into an existing normalized Bremsstrahlung spectrum.
+    Integrate characteristic X-ray peaks into an existing normalised Bremsstrahlung spectrum.
 
-    This function adds specified characteristic peaks to an existing spectrum, normalizes their intensities 
-    relative to the spectrum"s maximum intensity, and then sorts the combined energy and intensity arrays 
+    This function adds specified characteristic peaks to an existing spectrum, normalises their intensities 
+    relative to the spectrum"s maximum intensity and selected kV, and then sorts the combined energy and intensity arrays 
     for consistent plotting. It is particularly useful for visualizing the complete spectrum including both 
     the Bremsstrahlung continuum and characteristic radiation peaks.
 
@@ -128,7 +128,7 @@ def add_characteristic_peaks(energy, energy_flux_normalised_filtered, energy_cha
     peak_fluxes_valid = [flux_peaks[i] for i, e in enumerate(energy_char) if e <= tube_voltage]
 
     # Normalize and adjust peak fluxes
-    peak_fluxes_normalised = [flux * max(flux_valid) for flux in peak_fluxes_valid]
+    peak_fluxes_normalised = [flux * max(flux_valid)*tube_voltage / 100.0 for flux in peak_fluxes_valid]
 
     for i, peak_energy in enumerate(peak_energies_valid):
         # Find the closest intensity in the valid Bremsstrahlung spectrum for each peak
@@ -579,7 +579,7 @@ if __name__ == "__main__":
 
         if show_characteristic_xray_peaks:
             # Add characteristic peaks to the spectrum
-            energy_valid, energy_flux_normalised_filtered = add_characteristic_peaks(energy_valid, energy_flux_normalised_filtered, energy_char, flux_peaks)
+            energy_valid, energy_flux_normalised_filtered = add_characteristic_peaks(energy_valid, energy_flux_normalised_filtered, energy_char, flux_peaks, tube_voltage)
 
             # Plot the spectrum with characteristic peaks
             ax.plot(energy_valid, energy_flux_normalised_filtered,linestyle="-",linewidth=1.5,color=selected_colour)
