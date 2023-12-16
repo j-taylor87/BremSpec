@@ -615,13 +615,13 @@ if __name__ == "__main__":
             ax.plot(energy_valid, energy_flux_normalised_filtered,linestyle="-",linewidth=1.5,color=selected_colour)
 
         # Fill underneath the curve
-        ax.fill_between(energy_valid, 0, energy_flux_normalised_filtered, color="tomato", alpha=0.4)
+        ax.fill_between(energy_valid, 0, energy_flux_normalised_filtered, color=selected_colour, alpha=0.4)
 
         if show_median_energy:
             # Add a vertical line for median energy at 50% AUC
             median_index = np.where(energy_valid >= median_energy_at_50pct_auc)[0][0]
             median_height = energy_flux_normalised_filtered[median_index]
-            ax.plot([median_energy_at_50pct_auc, median_energy_at_50pct_auc], [0, median_height], color="navy", 
+            ax.plot([median_energy_at_50pct_auc, median_energy_at_50pct_auc], [0, median_height], color="white", 
                     linestyle="--", linewidth=0.8, label=f"Average Energy: {median_energy_at_50pct_auc:.2f} keV")
         
             # Add annotation for the median energy
