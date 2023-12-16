@@ -383,7 +383,7 @@ if __name__ == "__main__":
     st.write("Bremsstrahlung X-ray Spectrum Visualiser") #`Decelerate and Illuminate`
     
     # Create two columns
-    col1, col2 = st.columns([1,2.5])
+    col1, col2, col3 = st.columns([1,2.5,0.5])
 
     # List of available plot styles
     plot_styles = ["classic","bmh","ggplot","Solarize_Light2","dark_background"]
@@ -528,10 +528,13 @@ if __name__ == "__main__":
         elif target_material == "Mo (Z=42)":
             Z = 42
 
+
+    with col3:
         # Dropdown for selecting plot style
         selected_style = st.selectbox("Select Plot Style", plot_styles)
 
-    with col2: # elements in col2 will be displayed in the right column
+        # Dropdown for selecting plotting colour
+        selected_colour = st.selectbox("Select Plot Colour", ["tomato","navy","black","grey","darkgrey","lightgrey","white","red","green","blue","cyan","magenta","yellow","orange","purple","brown","pink"])
 
         # Checkbox for turning grid on/off
         show_grid = st.checkbox("Show Grid", value=False)
@@ -542,6 +545,10 @@ if __name__ == "__main__":
         # Set the maximum tube voltage based selected kV or not for scaling the x-axis
         if scale_axes_with_kv:
             tube_voltage_max = tube_voltage
+        
+        y_axis_max = st.slider('Set maximum y-axis value:', min_value=0.0, max_value=1.0, value=1.0)
+
+    with col2: # elements in col2 will be displayed in the right column
 
         # Calculate the spectrum and get energy values below the tube voltage
         if mode: # Automatic mode
@@ -569,14 +576,13 @@ if __name__ == "__main__":
         fig, ax = plt.subplots(figsize=(14, 8),dpi=600)
    
         x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
-        y_axis_max = st.number_input('Set maximum y-axis value:', min_value=0.0, max_value=2.0, value=1.0)
 
         if show_characteristic_xray_peaks:
             # Add characteristic peaks to the spectrum
             energy_valid, energy_flux_normalised_filtered = add_characteristic_peaks(energy_valid, energy_flux_normalised_filtered, energy_char, flux_peaks)
 
             # Plot the spectrum with characteristic peaks
-            ax.plot(energy_valid, energy_flux_normalised_filtered,linestyle="-",linewidth=1.5,color="tomato")
+            ax.plot(energy_valid, energy_flux_normalised_filtered,linestyle="-",linewidth=1.5,color=selected_colour)
 
             # Manually position each annotation
             annotations = [
@@ -606,7 +612,7 @@ if __name__ == "__main__":
                                         fontsize=8)
         else:
             # Plot the spectrum without characteristic peaks
-            ax.plot(energy_valid, energy_flux_normalised_filtered,linestyle="-",linewidth=1.5,color="tomato")
+            ax.plot(energy_valid, energy_flux_normalised_filtered,linestyle="-",linewidth=1.5,color=selected_colour)
 
         # Fill underneath the curve
         ax.fill_between(energy_valid, 0, energy_flux_normalised_filtered, color="tomato", alpha=0.4)
