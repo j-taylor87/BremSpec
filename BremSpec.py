@@ -534,7 +534,7 @@ if __name__ == "__main__":
         selected_style = st.selectbox("Select Plot Style", plot_styles)
 
         # Dropdown for selecting plotting colour
-        selected_colour = st.selectbox("Select Plot Colour", ["tomato","navy","black","grey","darkgrey","lightgrey","white","red","green","blue","cyan","magenta","yellow","orange","purple","brown","pink"])
+        selected_colour = st.selectbox("Select Plot Colour", ["royalblue","tomato","teal","lightgreen","lightsteelblue","cyan","magenta","gold","darkorange","darkviolet","crimson","deeppink","grey"])
 
         # Checkbox for turning grid on/off
         show_grid = st.checkbox("Show Grid", value=False)
@@ -621,7 +621,7 @@ if __name__ == "__main__":
             # Add a vertical line for median energy at 50% AUC
             median_index = np.where(energy_valid >= median_energy_at_50pct_auc)[0][0]
             median_height = energy_flux_normalised_filtered[median_index]
-            ax.plot([median_energy_at_50pct_auc, median_energy_at_50pct_auc], [0, median_height], color="white", 
+            ax.plot([median_energy_at_50pct_auc, median_energy_at_50pct_auc], [0, median_height], color="navy", 
                     linestyle="--", linewidth=0.8, label=f"Average Energy: {median_energy_at_50pct_auc:.2f} keV")
         
             # Add annotation for the median energy
