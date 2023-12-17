@@ -9,9 +9,9 @@ from scipy.constants import speed_of_light
 
 def kramers_law(Z, energy, tube_voltage, tube_voltage_max, tube_current=None, tube_current_max=None, exposure_time=None, exposure_time_max=None, current_time_product=None, current_time_product_max=None):
     """
-    Calculate the normalized Bremsstrahlung spectrum based on Kramers" law for a given target material and set of operational parameters.
+    Calculate the normalised Bremsstrahlung spectrum based on Kramers" law for a given target material and set of operational parameters.
 
-    This function computes the Bremsstrahlung radiation spectrum for a target material characterized by its atomic number. It considers different modes of operation (manual and automatic) based on the provided parameters. The output is the normalized energy flux of the radiation for energies up to the applied tube voltage.
+    This function computes the Bremsstrahlung radiation spectrum for a target material characterized by its atomic number. It considers different modes of operation (manual and automatic) based on the provided parameters. The output is the normalised energy flux of the radiation for energies up to the applied tube voltage.
 
     Parameters:
     Z (int): Atomic number of the target material.
@@ -25,16 +25,7 @@ def kramers_law(Z, energy, tube_voltage, tube_voltage_max, tube_current=None, tu
 
     Returns:
     tuple of ndarray: A tuple containing two ndarrays. The first array is the valid energies up to the tube voltage, 
-                      and the second array is the corresponding normalized energy flux of the radiation.
-
-    Example:
-    >>> Z = 74  # Atomic number for Tungsten
-    >>> energy = np.linspace(0, 150, 300)  # Energy array from 0 to 150 keV
-    >>> tube_voltage = 100  # Applied tube voltage in kV
-    >>> tube_voltage_max = 150  # Maximum tube voltage for the modality
-    >>> tube_current = 10  # Tube current in mA
-    >>> exposure_time = 1  # Exposure time in seconds
-    >>> valid_energy, normalized_flux = kramers_law(Z, energy, tube_voltage, tube_voltage_max, tube_current=tube_current, exposure_time=exposure_time)
+                      and the second array is the corresponding normalised energy flux of the radiation.
     """
 
     k_l = 1  # Empirical constant
@@ -50,7 +41,7 @@ def kramers_law(Z, energy, tube_voltage, tube_voltage_max, tube_current=None, tu
         energy_flux = (k_l * Z * tube_current * exposure_time / 1000) / (2.0 * np.pi * speed_of_light) * (tube_voltage - energy_valid)
         energy_flux_max = (k_l * Z * tube_current_max * exposure_time_max / 1000) / (2.0 * np.pi * speed_of_light) * (tube_voltage_max - energy_valid)
 
-    # Normalize energy flux
+    # normalise energy flux
     energy_flux_normalised = energy_flux / np.max(energy_flux_max)
     
     return energy_valid, energy_flux_normalised
@@ -79,14 +70,6 @@ def relative_attenuation_mass_coeff(energy, density, filter_thickness, mass_atte
     - The NIST XCOM calculator (https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html) can be used 
       to obtain mass attenuation coefficients for different materials and energies.
     - The thickness of the material is converted from mm to cm within the function for calculation purposes.
-
-    Example:
-    >>> energy_array = np.array([30, 40, 50])  # Energies in keV
-    >>> density = 2.33  # Silicon density in g/cm³
-    >>> thickness = 5  # Thickness in mm
-    >>> mass_atten_coeff_array = np.array([0.2, 0.15, 0.1])  # Example coefficients
-    >>> tube_voltage = 50  # Tube voltage in kV
-    >>> attenuation = relative_attenuation_mass_coeff(energy_array, density, thickness, mass_atten_coeff_array, tube_voltage)
     """
     mass_atten_coeff_valid = mass_atten_coeff[energy <= tube_voltage]
     attenuation_relative = np.exp(-mass_atten_coeff_valid * filter_thickness / 10 * density)  # /10 to convert thickness from mm to cm
@@ -99,25 +82,18 @@ def add_characteristic_peaks(energy, energy_flux_normalised_filtered, energy_cha
 
     This function adds specified characteristic peaks to an existing spectrum, normalises their intensities 
     relative to the spectrum"s maximum intensity and selected kV, and then sorts the combined energy and intensity arrays 
-    for consistent plotting. It is particularly useful for visualizing the complete spectrum including both 
+    for consistent plotting. It is particularly useful for visualising the complete spectrum including both 
     the Bremsstrahlung continuum and characteristic radiation peaks.
 
     Parameters:
     energy (ndarray): An array of energies in the existing spectrum.
-    energy_flux_normalised_filtered (ndarray): An array of normalized energy flux values corresponding to "energy".
+    energy_flux_normalised_filtered (ndarray): An array of normalised energy flux values corresponding to "energy".
     energy_char (ndarray): An array of energies where characteristic peaks occur.
     flux_peaks (ndarray): An array of flux values for each characteristic peak.
 
     Returns:
     tuple of ndarray: A tuple containing two sorted ndarrays. The first array is the combined energy values (including characteristic peaks),
-                      and the second array is the corresponding combined and normalized energy flux values.
-
-    Example:
-    >>> energy = np.linspace(0, 150, 300)  # Existing spectrum energies
-    >>> energy_flux = np.random.random(300)  # Simulated normalized energy flux
-    >>> energy_char = np.array([59.3, 67.2])  # Characteristic peak energies
-    >>> flux_peaks = np.array([1.5, 1.0])  # Flux values for the peaks
-    >>> energy_combined, flux_combined = add_characteristic_peaks(energy, energy_flux, energy_char, flux_peaks)
+                      and the second array is the corresponding combined and normalised energy flux values.
     """
     # Filter out energies and their corresponding flux values above the tube_voltage
     energy_valid = energy[energy <= tube_voltage]
@@ -127,8 +103,8 @@ def add_characteristic_peaks(energy, energy_flux_normalised_filtered, energy_cha
     peak_energies_valid = [en for en in energy_char if en <= tube_voltage]
     peak_fluxes_valid = [flux_peaks[i] for i, e in enumerate(energy_char) if e <= tube_voltage]
 
-    # Normalize and adjust peak fluxes
-    peak_fluxes_normalised = [flux * max(flux_valid)*tube_voltage / 100.0 for flux in peak_fluxes_valid]
+    # normalise and adjust peak fluxes
+    peak_fluxes_normalised = [flux * max(flux_valid)*tube_voltage / 200.0 for flux in peak_fluxes_valid]
 
     for i, peak_energy in enumerate(peak_energies_valid):
         # Find the closest intensity in the valid Bremsstrahlung spectrum for each peak
@@ -150,15 +126,15 @@ def adjust_duplicates(energy_array):
     """
     Adjusts duplicate values in an array by adding a small increment to ensure uniqueness.
 
+    This function takes an array of energy values and checks for duplicates. If duplicates are found,
+    it adds a small increment to each duplicate to make them unique while preserving the order.
+    The resulting array is sorted and returned.
+
     Parameters:
     energy_array (array-like): Input array containing energy values.
 
     Returns:
     numpy.ndarray: A sorted array with adjusted values to ensure uniqueness.
-
-    This function takes an array of energy values and checks for duplicates. If duplicates are found,
-    it adds a small increment to each duplicate to make them unique while preserving the order.
-    The resulting array is sorted and returned.
     """
     unique_energy = {}
     increment = 0.0001  # Small increment to ensure uniqueness
@@ -210,6 +186,8 @@ def filter_selection_and_input(base_energy_array, filter_number, filters, defaul
 
     This function allows users to select a filter material from a given list and set its thickness using a slider. 
     It then interpolates the mass attenuation coefficients of the selected material to match a base energy array.
+    The function handles different materials with specific energy arrays and mass attenuation coefficients retrieved from NIST's XCOM database.
+    For more information, refer to: https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html
 
     Parameters:
     base_energy_array (np.array): An array of energy values (in keV) to which the mass attenuation coefficients will be interpolated.
@@ -218,15 +196,11 @@ def filter_selection_and_input(base_energy_array, filter_number, filters, defaul
     default (str, optional): The default filter material to be preselected. Default is None.
 
     Returns:
-    tuple: A tuple containing:
+    tuple:
       interpolated_mass_attenuation (np.array): The interpolated mass attenuation coefficients.
       selected_filter (str): The selected filter material.
       filter_density (float): The density of the selected material (in g/cm^3).
       selected_thickness (float): The selected thickness of the filter (in mm).
-
-    The function handles different materials with specific energy arrays and mass attenuation coefficients retrieved from NIST's XCOM database.
-    For more information, refer to: https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html
-    It uses numpy's interpolation method to align the coefficients with the base energy array.
     """
     
     # Use the default filter if provided, otherwise default to the first item in the list
@@ -303,7 +277,7 @@ def calculate_auc_percentage(energy_flux_normalised_filtered, energy_valid, ener
     Calculate the AUC percentage for a filtered energy spectrum within a specified energy range.
 
     Parameters:
-    energy_flux_normalised_filtered (numpy.ndarray): Normalized filtered energy flux.
+    energy_flux_normalised_filtered (numpy.ndarray): normalised filtered energy flux.
     energy_valid (numpy.ndarray): Valid energy values.
     energy_lower_bound (float): Lower bound of the energy range of interest.
     energy_upper_bound (float): Upper bound of the energy range of interest.
@@ -334,7 +308,7 @@ def calculate_median_energy_and_hvl(energy_valid, energy_flux_normalised_filtere
 
     Parameters:
     energy_valid (numpy.ndarray): Valid energy values.
-    energy_flux_normalised_filtered (numpy.ndarray): Normalized filtered energy flux.
+    energy_flux_normalised_filtered (numpy.ndarray): normalised filtered energy flux.
     base_energy_array (numpy.ndarray): An array of energy values to which the mass attenuation coefficients will be interpolated.
     filters (list): A list of filter materials available for selection.
     filter_number (int): The number of the filter (used for labeling in the user interface).
@@ -352,7 +326,7 @@ def calculate_median_energy_and_hvl(energy_valid, energy_flux_normalised_filtere
     # Calculate the cumulative sum of the energy fluxes
     cumulative_energy_flux = np.cumsum(energy_flux_normalised_filtered * np.diff(energy_valid, prepend=0))
 
-    # Normalize by the total AUC
+    # normalise by the total AUC
     normalised_cumulative_energy_flux = cumulative_energy_flux / np.trapz(energy_flux_normalised_filtered, energy_valid)
 
     # Find the index for median energy
