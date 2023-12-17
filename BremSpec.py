@@ -103,8 +103,8 @@ def add_characteristic_peaks(energy, energy_flux_normalised_filtered, energy_cha
     peak_energies_valid = [en for en in energy_char if en <= tube_voltage]
     peak_fluxes_valid = [flux_peaks[i] for i, e in enumerate(energy_char) if e <= tube_voltage]
 
-    # normalise and adjust peak fluxes
-    peak_fluxes_normalised = [flux * max(flux_valid)*tube_voltage / 150.0 for flux in peak_fluxes_valid]
+    # Normalise and adjust peak fluxes
+    peak_fluxes_normalised = [flux * max(flux_valid) * tube_voltage / 100.0 for flux in peak_fluxes_valid]
 
     for i, peak_energy in enumerate(peak_energies_valid):
         # Find the closest intensity in the valid Bremsstrahlung spectrum for each peak
