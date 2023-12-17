@@ -104,7 +104,7 @@ def add_characteristic_peaks(energy, energy_flux_normalised_filtered, energy_cha
     peak_fluxes_valid = [flux_peaks[i] for i, e in enumerate(energy_char) if e <= tube_voltage]
 
     # Normalise and adjust peak fluxes
-    peak_fluxes_normalised = [flux * max(flux_valid) * 0.95 for flux in peak_fluxes_valid]
+    peak_fluxes_normalised = [flux * max(flux_valid) * 0.98 for flux in peak_fluxes_valid]
 
     for i, peak_energy in enumerate(peak_energies_valid):
         # Find the closest intensity in the valid Bremsstrahlung spectrum for each peak
@@ -495,7 +495,7 @@ if __name__ == "__main__":
 
             # Estimated relative energy flux of characteristic x-ray peaks
             # These values are just crude estimates of the heights of the peaks relative to the maximum energy flux
-            flux_peaks = np.array([1.2, 1.45, 1.0, 0.8, 0.2])
+            flux_peaks = np.array([1.1, 1.3, 0.8, 0.7, 0.1])
 
         elif target_material == "Rh (Z=45)":
             Z = 45
