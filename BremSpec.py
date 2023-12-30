@@ -629,13 +629,17 @@ if __name__ == "__main__":
             )
             
         # Annotate the AUC percentage on the plot
-        ax.annotate(f"Relative AUC: \033[1m{auc_percentage:.2f}%\033[0m (of max factors, unfiltered)", 
-                    color = "k",
+        auc_text = f"Relative AUC: {auc_percentage:.2f}% (of max factors, unfiltered)"
+        bold_text = f"{auc_percentage:.2f}%"
+        formatted_text = auc_text.replace(bold_text, f'\\textbf{{{bold_text}}}')
+        ax.annotate(formatted_text, 
+                    color="k",
                     xy=(0.60, 0.95), 
                     xycoords="axes fraction", 
-                    fontsize=12,
+                    fontsize=10,
                     fontproperties=font,
-                    bbox=dict(boxstyle=None, fc="0.9"))
+                    bbox=dict(boxstyle=None, fc="0.9"),
+                    usetex=True)
 
         ax.set_xlabel("Photon Energy E (keV)", fontsize=12)
         ax.set_ylabel("Relative Energy Flux", fontsize=12)
