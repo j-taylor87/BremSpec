@@ -628,9 +628,8 @@ if __name__ == "__main__":
                         #arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.5"),
             )
             
-            
         # Annotate the AUC percentage on the plot
-        ax.annotate(f"Relative AUC: {auc_percentage:.2f}% (of max factors, unfiltered)", 
+        ax.annotate(f"Relative AUC: \033[1m{auc_percentage:.2f}%\033[0m (of max factors, unfiltered)", 
                     color = "k",
                     xy=(0.60, 0.95), 
                     xycoords="axes fraction", 
