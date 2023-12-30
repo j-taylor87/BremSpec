@@ -631,7 +631,7 @@ if __name__ == "__main__":
         # # Annotate the AUC percentage on the plot
         ax.annotate(f"Relative AUC: {auc_percentage:.2f} (of max factors, unfiltered)", 
                     color = "k",
-                    xy=(0.7, 0.95), 
+                    xy=(0.64, 0.95), 
                     xycoords="axes fraction", 
                     fontsize=11,
                     fontproperties=font,
