@@ -2,7 +2,6 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
-import matplotlib.font_manager as fm
 plt.rcParams["font.family"] = "sans-serif"
 # plt.rcParams["font.sans-serif"] = "Tahoma"
 from scipy.interpolate import interp1d
@@ -629,25 +628,14 @@ if __name__ == "__main__":
                         #arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.5"),
             )
         
-        bold_font = fm.FontProperties(weight='bold')  # Define bold font properties
-
-        # Annotate the AUC percentage on the plot
-        normal_text = "Relative AUC: "
-        bold_text = f"{auc_percentage:.2f}%"
-        full_text = normal_text + bold_text + " (of max factors, unfiltered)"
-        ax.text(0.60, 0.95, normal_text, transform=ax.transAxes, fontsize=10, bbox=dict(boxstyle=None, fc="0.9"))
-        ax.text(0.60 + ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted()).width * ax.xaxis.get_label().get_fontsize() * len(normal_text) / fig.dpi, 0.95, bold_text, transform=ax.transAxes, fontsize=10, fontproperties=bold_font, bbox=dict(boxstyle=None, fc="0.9"))
-
-
-
         # # Annotate the AUC percentage on the plot
-        # ax.annotate(f"Relative AUC: \{auc_percentage:.2f}[0m (of max factors, unfiltered)", 
-        #             color = "k",
-        #             xy=(0.60, 0.95), 
-        #             xycoords="axes fraction", 
-        #             fontsize=10,
-        #             fontproperties=font,
-        #             bbox=dict(boxstyle=None, fc="0.9"))
+        ax.annotate(f"Relative AUC: \{auc_percentage:.2f}[0m (of max factors, unfiltered)", 
+                    color = "k",
+                    xy=(0.60, 0.95), 
+                    xycoords="axes fraction", 
+                    fontsize=10,
+                    fontproperties=font,
+                    bbox=dict(boxstyle=None, fc="0.9"))
 
         ax.set_xlabel("Photon Energy E (keV)", fontsize=12)
         ax.set_ylabel("Relative Energy Flux", fontsize=12)
