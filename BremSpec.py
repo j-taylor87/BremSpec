@@ -435,7 +435,7 @@ if __name__ == "__main__":
             st.session_state.tube_voltage_old = tube_voltage_default  # Default tube voltage
 
         if "current_time_product_old" not in st.session_state:
-            st.session_state.current_time_product_old = tube_current_default*exposure_time_default**3  # Default current-time product
+            st.session_state.current_time_product_old = tube_current_default*exposure_time_default/1000  # Default current-time product
 
         # User input for technique factors based on selected mode
         if mode: # Automatic mode
