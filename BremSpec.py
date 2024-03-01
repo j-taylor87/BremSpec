@@ -443,11 +443,11 @@ if __name__ == "__main__":
             tube_voltage = st.slider("Tube Voltage (kV)", min_value=int(tube_voltage_min), max_value=int(tube_voltage_max), value=int(tube_voltage_default))
             
             if modality == "CT":
-                tube_current = 1/tube_voltage**5.0
+                tube_current = 1/tube_voltage**2.0
                 exposure_time = st.slider("Rotation Time (s)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.2f")
             else:
                  # Calculate the new current-time product
-                current_time_product = st.session_state.current_time_product_old*(st.session_state.tube_voltage_old/tube_voltage)**5.0
+                current_time_product = st.session_state.current_time_product_old*(st.session_state.tube_voltage_old/tube_voltage)**2.0
                 current_time_product_display = st.write("Current-Time Product (mAs): ", round(current_time_product,0))
                 
                 # Update the old values for the next run
