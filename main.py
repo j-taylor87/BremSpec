@@ -18,8 +18,8 @@ from add_characteristic_peaks import add_characteristic_peaks
 
 # Set data directory
 # data_dir = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-print("Current Working Directory:", os.getcwd())
-data_dir = "./Data"
+# print("Current Working Directory:", os.getcwd())
+data_dir = "./Data" # Works with GitHub
 
 # Set streamlit page to wide mode
 st.set_page_config(layout="wide")
@@ -57,10 +57,10 @@ if __name__ == "__main__":
         current_time_product_max = settings.get("current_time_product_max", 0)
         current_time_product_min = settings.get("current_time_product_min", 0)
         current_time_product_default = settings.get("current_time_product_default", 0)
-        #filters = settings.get("filters", [])
+        filters = settings.get("filters", [])
         automatic_mode = settings.get("automatic_mode", "")
 
-        filters = ["Al (Z=13)", "Cu (Z=29)", "Mo (Z=42)", "Rh (Z=45)", "Ag (Z=47)"]
+        # filters = ["Al (Z=13)", "Cu (Z=29)", "Mo (Z=42)", "Rh (Z=45)", "Ag (Z=47)"]
         # print(filters)
 
         # Set base energy array for plotting, needs to match interpolated attenuation data
@@ -85,7 +85,7 @@ if __name__ == "__main__":
                 exposure_time = st.slider("Rotation Time (s)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.2f")
             else:
                  # Calculate the new current-time product
-                current_time_product = st.session_state.current_time_product_old*(st.session_state.tube_voltage_old/tube_voltage)**5.0
+                current_time_product = st.session_state.current_time_product_old*(st.session_state.tube_voltage_old/tube_voltage)**2.0
                 current_time_product_display = st.write("Current-Time Product (mAs): ", round(current_time_product,0))
                 
                 # Update the old values for the next run
@@ -101,20 +101,34 @@ if __name__ == "__main__":
                 exposure_time = st.slider("Exposure Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.0f")
                 current_time_product_display = st.write("Current-Time Product (mAs): ", round(tube_current*exposure_time / 1000,0))
 
+        # Default values for each filter
+        default_filter_1 = filters[0]
+        default_filter_2 = filters[1]
+        default_filter_3 = filters[2]
+
+        # Find the indices of the default values
+        default_index_1 = filters.index(default_filter_1) if default_filter_1 in filters else 0
+        default_index_2 = filters.index(default_filter_2) if default_filter_2 in filters else 0
+        default_index_3 = filters.index(default_filter_3) if default_filter_3 in filters else 0
+
+        # Selection boxes for filters
+        filter_material_selection_1 = st.selectbox(f"Filter 1 Material", filters, index=default_index_1, key=f"filter_material_1")
+        filter_material_selection_2 = st.selectbox(f"Filter 2 Material", filters, index=default_index_2, key=f"filter_material_2")
+        filter_material_selection_3 = st.selectbox(f"Filter 3/Attenuator Material", filters, index=default_index_3, key=f"filter_material_3")
+
         # User input for filter materials
-        mass_atten_coeff_1, filter_1_material, filter_1_density, filter_1_thickness = select_attenuation(1,filters,data_dir)
+        mass_atten_coeff_1, filter_1_material, filter_1_density, filter_1_thickness = select_attenuation(1,filter_material_selection_1,data_dir)
         
         # Determine a default value for the second filter that isn't the same as the first
         default_for_second_filter = filters[1] if filter_1_material == filters[0] else filters[0]
-        mass_atten_coeff_2, filter_2_material, filter_2_density, filter_2_thickness = select_attenuation(2,filters,data_dir,default=default_for_second_filter)
+        mass_atten_coeff_2, filter_2_material, filter_2_density, filter_2_thickness = select_attenuation(2,filter_material_selection_2,data_dir)
 
         # Determine a default value for the third filter that isn't the same as the first or second
-        remaining_filters_for_third = [f for f in filters if f not in [filter_1_material, filter_2_material]]
-        default_for_third_filter = remaining_filters_for_third[0] if remaining_filters_for_third else filters[0]
-        mass_atten_coeff_3, filter_3_material, filter_3_density, filter_3_thickness = select_attenuation(3,remaining_filters_for_third,data_dir,default=default_for_third_filter)
+        default_for_third_filter = filters[2] if filter_1_material == filters[0] else filters[0]
+        mass_atten_coeff_3, filter_3_material, filter_3_density, filter_3_thickness = select_attenuation(3,filter_material_selection_3,data_dir)
 
         # User input for target material
-        target_material = st.selectbox("Target Material", ["W (Z=74)", "Rh (Z=45)", "Mo (Z=42)"])
+        target_material = st.selectbox("Target Material", ["W (Z=74)", "Rh (Z=45) (WIP)", "Mo (Z=42) (WIP)"])
         if target_material == "W (Z=74)":
             Z = 74
 
@@ -158,7 +172,7 @@ if __name__ == "__main__":
         if scale_axes_with_kv:
             tube_voltage_max = tube_voltage
         
-        y_axis_max = st.slider('Set maximum y-axis value:', min_value=0.0, max_value=1.0, value=1.0)
+        y_axis_max = st.slider('Set maximum y-axis value:',min_value=0.001,max_value=1.0,step=0.001,value=1.0)
 
         # Checkbox for showing charactersistic X-ray peaks
         show_characteristic_xray_peaks = st.checkbox("Show Characteristic X-ray Peaks", value=False)
@@ -172,7 +186,7 @@ if __name__ == "__main__":
         # Checkbox for showing attenuation plot
         show_attenuation_plot_filter_1= st.checkbox('Show attenuation plot for filter 1')
         show_attenuation_plot_filter_2= st.checkbox('Show attenuation plot for filter 2')
-        show_attenuation_plot_filter_3= st.checkbox('Show attenuation plot for filter 3')
+        show_attenuation_plot_filter_3= st.checkbox('Show attenuation plot for filter 3/attenuator')
 
 
     with col2: # elements in col2 will be displayed in the right column

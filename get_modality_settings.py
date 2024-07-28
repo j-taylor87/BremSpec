@@ -17,12 +17,12 @@ def get_modality_settings(modality):
             "current_time_product_min": 0.0,
             "current_time_product_default": 100.0,
 
-            "filters": ["Al (Z=13)", "Cu (Z=29)","PMMA (Z~7)"],
+            "filters": ["Al (Z=13)", "Cu (Z=29)","PMMA (Zeff~6.56)","Soft Tissue (Zeff~7.52)","Cortical Bone (Zeff~13.98)"],
 
             "automatic_mode": "Automatic Exposure Control (AEC) (WIP)"
         }
 
-    elif modality == "Mammography":
+    elif modality == "Mammography (WIP)":
         return {
             "tube_voltage_max": 50.0,
             "tube_voltage_min": 10.0,
@@ -40,7 +40,7 @@ def get_modality_settings(modality):
             "current_time_product_min": 1.0,
             "current_time_product_default": 20.0,
 
-            "filters": ["Al (Z=13)", "Mo (Z=42)", "Rh (Z=45)", "Ag (Z=47)"],
+            "filters": ["Be (Z=4)","Al (Z=13)", "Mo (Z=42)", "Rh (Z=45)", "Ag (Z=47)","PMMA (Zeff~6.56)","Breast Tissue (Zeff~7.88)"],
 
             "automatic_mode": "Automatic Exposure Control (AEC) (WIP)"
         }
@@ -63,7 +63,7 @@ def get_modality_settings(modality):
             "pulse_width_min": 1.0,
             "pulse_width_default": 8.0,
 
-            "filters": ["Al (Z=13)", "Cu (Z=29)"],
+            "filters": ["Al (Z=13)", "Cu (Z=29)","PMMA (Zeff~6.56)"],
 
             "automatic_mode": "Automatic Dose Rate Control (ADRC) (WIP)"
         }

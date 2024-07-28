@@ -26,6 +26,8 @@ def relative_attenuation_mass_coeff(energy, density, filter_thickness, mass_atte
     - The thickness of the material is converted from mm to cm within the function for calculation purposes.
     """
     mass_atten_coeff_valid = mass_atten_coeff[energy <= tube_voltage]
-    attenuation_relative = np.exp(-mass_atten_coeff_valid * filter_thickness / 10 * density)  # /10 to convert thickness from mm to cm
+    exponent = -mass_atten_coeff_valid * filter_thickness / 10 * density # /10 to convert thickness from mm to cm
+    exponent = np.clip(exponent,-100,100) # clip values to prevent overflow issues
+    attenuation_relative = np.exp(exponent)  
 
     return mass_atten_coeff_valid, attenuation_relative
