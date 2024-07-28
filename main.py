@@ -19,7 +19,7 @@ from add_characteristic_peaks import add_characteristic_peaks
 # Set data directory
 # data_dir = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 print("Current Working Directory:", os.getcwd())
-data_dir = ".\Data"
+data_dir = "./Data"
 
 # Set streamlit page to wide mode
 st.set_page_config(layout="wide")
