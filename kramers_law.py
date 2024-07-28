@@ -29,13 +29,13 @@ def kramers_law(Z, energy, tube_voltage, tube_voltage_max, tube_current=None, tu
 
     # Calculate energy flux
     if current_time_product is not None:
-        energy_flux = (k_l * Z * current_time_product) / (2.0 * np.pi * speed_of_light) * (tube_voltage - energy_valid)
-        energy_flux_max = (k_l * Z * current_time_product_max) / (2.0 * np.pi * speed_of_light) * (tube_voltage_max - energy_valid)
+        energy_flux = (k_l * Z * current_time_product) / (2.0 * np.pi * speed_of_light) * (tube_voltage - energy_valid) 
+        energy_flux_max = (k_l * Z * current_time_product_max) / (2.0 * np.pi * speed_of_light) * (tube_voltage_max - energy_valid) 
     else:
         energy_flux = (k_l * Z * tube_current * exposure_time / 1000) / (2.0 * np.pi * speed_of_light) * (tube_voltage - energy_valid)
         energy_flux_max = (k_l * Z * tube_current_max * exposure_time_max / 1000) / (2.0 * np.pi * speed_of_light) * (tube_voltage_max - energy_valid)
 
-    # normalise energy flux
+    # Normalise energy flux
     energy_flux_normalised = energy_flux / np.max(energy_flux_max)
-    
+
     return energy_valid, energy_flux_normalised

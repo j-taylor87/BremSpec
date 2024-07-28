@@ -1,14 +1,14 @@
 import streamlit as st
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 plt.rcParams["font.family"] = "sans-serif"
 # plt.rcParams["font.sans-serif"] = "Tahoma"
-from scipy.interpolate import interp1d
-from scipy.constants import speed_of_light
 
 # Custom functions
-from filter_selection_and_input import filter_selection_and_input
+from get_modality_settings import get_modality_settings
+from select_attenuation import select_attenuation
 from kramers_law import kramers_law
 from relative_attenuation_mass_coeff import relative_attenuation_mass_coeff
 from calculate_auc_percentage import calculate_auc_percentage
@@ -16,16 +16,20 @@ from calculate_median_energy import calculate_median_energy
 from calculate_effective_energy_and_hvl import calculate_effective_energy_and_hvl
 from add_characteristic_peaks import add_characteristic_peaks
 
+# Set data directory
+# data_dir = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+data_dir = ".\Data"
+
 # Set streamlit page to wide mode
 st.set_page_config(layout="wide")
 
 # Main function
 if __name__ == "__main__":
     st.title("BremSpec")
-    st.write("Bremsstrahlung X-ray Spectrum Visualiser") #`Decelerate and Illuminate`
+    st.write("Bremsstrahlung X-ray Spectrum Visualiser") #`Decelerate and Illuminate :P`
     
     # Create two columns
-    col1, col2, col3 = st.columns([1,2.5,0.5])
+    col1, col2, col3 = st.columns([0.7,2.5,0.5])
 
     # List of available plot styles
     plot_styles = ["classic","bmh","ggplot","Solarize_Light2","dark_background"]
@@ -36,67 +40,30 @@ if __name__ == "__main__":
         # User input for modality
         modality = st.selectbox("Modality", ["General X-ray", "Mammography (WIP)", "Fluoroscopy (WIP)","CT (WIP)"])  # Add more modalities as needed
 
-        # Set factors based on modality
-        if modality == "General X-ray":
-            tube_voltage_max = 150.0 # kV
-            tube_voltage_min = 40.0
-            tube_voltage_default = 80.0 
-            tube_current_max = 500.0 # mA
-            tube_current_min = 1.0
-            tube_current_default = 200.0
-            exposure_time_max = 1000.0 # ms
-            exposure_time_min = 1.0
-            exposure_time_default = 500.0
-            current_time_product_max = 500.0 # mAs
-            current_time_product_min = 0.0
-            current_time_product_default = 100.0
-            filters = ["Al (Z=13)", "Cu (Z=29)"]
-            automatic_mode = "Automatic Exposure Control (AEC) (WIP)"
+        # Get settings for the selected modality
+        settings = get_modality_settings(modality)
 
-        elif modality == "Mammography":
-            tube_voltage_max = 50.0
-            tube_voltage_min = 10.0
-            tube_voltage_default = 30.0
-            tube_current_max = 100.0
-            tube_current_min = 1.0
-            tube_current_default = 50.0
-            exposure_time_max = 200.0
-            exposure_time_min = 1.0
-            exposure_time_default = 100.0
-            current_time_product_max = 100.0
-            current_time_product_min = 1.0
-            current_time_product_default = 20.0
-            filters = ["Al (Z=13)","Mo (Z=42)", "Rh (Z=45)", "Ag (Z=47)"]
-            automatic_mode = "Automatic Exposure Control (AEC) (WIP)"
+        # Extract settings for use
+        tube_voltage_max = settings.get("tube_voltage_max", 0)
+        tube_voltage_min = settings.get("tube_voltage_min", 0)
+        tube_voltage_default = settings.get("tube_voltage_default", 0)
+        tube_current_max = settings.get("tube_current_max", 0)
+        tube_current_min = settings.get("tube_current_min", 0)
+        tube_current_default = settings.get("tube_current_default", 0)
+        exposure_time_max = settings.get("exposure_time_max", 0)
+        exposure_time_min = settings.get("exposure_time_min", 0)
+        exposure_time_default = settings.get("exposure_time_default", 0)
+        current_time_product_max = settings.get("current_time_product_max", 0)
+        current_time_product_min = settings.get("current_time_product_min", 0)
+        current_time_product_default = settings.get("current_time_product_default", 0)
+        #filters = settings.get("filters", [])
+        automatic_mode = settings.get("automatic_mode", "")
 
-        elif modality == "Fluoroscopy (WIP)":
-            tube_voltage_max = 133.0
-            tube_voltage_min = 40.0
-            tube_voltage_default = 50.0
-            tube_current_max = 500.0
-            tube_current_min = 1.0
-            tube_current_default = 100.0
-            exposure_time_max = 1000.0
-            exposure_time_min = 1.0
-            exposure_time_default = 0.1
-            pulse_width_max = 20.0 # ms
-            pulse_width_min = 1.0
-            pulse_width_default = 8.0
-            filters = ["Al (Z=13)", "Cu (Z=29)"]
-            automatic_mode = "Automatic Dose Rate Control (ADRC) (WIP)"
+        filters = ["Al (Z=13)", "Cu (Z=29)", "Mo (Z=42)", "Rh (Z=45)", "Ag (Z=47)"]
+        # print(filters)
 
-        elif modality == "CT (WIP)":
-            tube_voltage_max = 140.0
-            tube_voltage_min = 50.0
-            tube_voltage_default = 120.0
-            tube_current_max = 1000.0
-            tube_current_min = 0.0
-            tube_current_default = 500.0
-            exposure_time_max = 2.0 # Rotation time
-            exposure_time_min = 0.0
-            exposure_time_default = 0.5
-            filters = ["Al (Z=13)", "Cu (Z=29)", "Sn (Z=50)"]
-            automatic_mode = "Automatic Exposure Control (AEC) (WIP)"
+        # Set base energy array for plotting, needs to match interpolated attenuation data
+        energy_base_array = np.linspace(0, tube_voltage_max, 10000) # keV
 
         # User input for mode
         mode = st.checkbox(automatic_mode)
@@ -133,40 +100,38 @@ if __name__ == "__main__":
                 exposure_time = st.slider("Exposure Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.0f")
                 current_time_product_display = st.write("Current-Time Product (mAs): ", round(tube_current*exposure_time / 1000,0))
 
-        # Define a base energy array that all materials should conform to
-        num_points = 1000 # higher number of points gives smoother plots but takes longer to compute
-        energy_base_array = np.linspace(0, 150, num=num_points)  # Example: from 1 to 200 with 200 points
-
         # User input for filter materials
-        mass_atten_coeff_1, filter_1_material, filter_1_density, filter_1_thickness = filter_selection_and_input(energy_base_array, 1, filters)
-
+        mass_atten_coeff_1, filter_1_material, filter_1_density, filter_1_thickness = select_attenuation(1,filters,data_dir)
+        
         # Determine a default value for the second filter that isn't the same as the first
         default_for_second_filter = filters[1] if filter_1_material == filters[0] else filters[0]
-        mass_atten_coeff_2, filter_2_material, filter_2_density, filter_2_thickness = filter_selection_and_input(energy_base_array, 2, filters,default=default_for_second_filter)
+        mass_atten_coeff_2, filter_2_material, filter_2_density, filter_2_thickness = select_attenuation(2,filters,data_dir,default=default_for_second_filter)
 
-        # Checkbox for showing charactersistic X-ray peaks
-        show_characteristic_xray_peaks = st.checkbox("Show Characteristic X-ray Peaks", value=False)
-
-        # Checkbox for showing the median beam energy
-        show_median_energy = st.checkbox("Show Median Beam Energy", value=False)
-
-        # Checkbox for showing the effective beam energy
-        show_effective_energy = st.checkbox("Show Effective Beam Energy (WIP)", value=False)
+        # Determine a default value for the third filter that isn't the same as the first or second
+        remaining_filters_for_third = [f for f in filters if f not in [filter_1_material, filter_2_material]]
+        default_for_third_filter = remaining_filters_for_third[0] if remaining_filters_for_third else filters[0]
+        mass_atten_coeff_3, filter_3_material, filter_3_density, filter_3_thickness = select_attenuation(3,remaining_filters_for_third,data_dir,default=default_for_third_filter)
 
         # User input for target material
         target_material = st.selectbox("Target Material", ["W (Z=74)", "Rh (Z=45)", "Mo (Z=42)"])
         if target_material == "W (Z=74)":
             Z = 74
 
-            # Characteristic x-ray energies for tungsten (W) in keV
+            # Characteristic x-ray energies for tungsten (W) in keV (a select few)
             # https://physics.nist.gov/PhysRefData/XrayTrans/Html/search.html
             # https://www.researchgate.net/publication/344795585_Simulation_of_X-Ray_Shielding_Effect_of_Different_Materials_Based_on_MCNP5#pf3
-            # KL2, KL3, KM3, KN3, L2M2 (Select few)
-            energy_char = np.array([57.98, 59.32, 67.25, 69.10, 8.97])
+            
+            energy_char = np.array([57.98, # KL2
+                                    59.32, # KL3
+                                    67.25, # KM3
+                                    69.10, # KN3
+                                    # 8.97 # L2M2
+                                    ]) 
 
             # Estimated relative energy flux of characteristic x-ray peaks
             # These values are just crude estimates of the heights of the peaks relative to the maximum energy flux
-            flux_peaks = np.array([1.1, 1.3, 0.8, 0.7, 0.1])
+            flux_peaks = np.array([1.1, 1.3, 0.8, 0.7])
+        
 
         elif target_material == "Rh (Z=45)":
             Z = 45
@@ -175,7 +140,7 @@ if __name__ == "__main__":
             Z = 42
 
 
-    with col3:
+    with col3: # col3 before col2 to define the show grid button
         # Dropdown for selecting plot style
         selected_style = st.selectbox("Select Plot Style", plot_styles)
 
@@ -186,7 +151,7 @@ if __name__ == "__main__":
         show_grid = st.checkbox("Show Grid", value=False)
 
         # Checkbox for scaling axes with selected kV
-        scale_axes_with_kv = st.checkbox('Scale axes with selected kV')
+        scale_axes_with_kv = st.checkbox('Scale x-axis with selected kV')
         
         # Set the maximum tube voltage based selected kV or not for scaling the x-axis
         if scale_axes_with_kv:
@@ -194,18 +159,38 @@ if __name__ == "__main__":
         
         y_axis_max = st.slider('Set maximum y-axis value:', min_value=0.0, max_value=1.0, value=1.0)
 
+        # Checkbox for showing charactersistic X-ray peaks
+        show_characteristic_xray_peaks = st.checkbox("Show Characteristic X-ray Peaks", value=False)
+
+        # Checkbox for showing the median beam energy
+        show_median_energy = st.checkbox("Show Median Beam Energy", value=False)
+
+        # Checkbox for showing the effective beam energy
+        show_effective_energy = st.checkbox("Show Effective Beam Energy (WIP)", value=False)
+
+        # Checkbox for showing attenuation plot
+        show_attenuation_plot_filter_1= st.checkbox('Show attenuation plot for filter 1')
+        show_attenuation_plot_filter_2= st.checkbox('Show attenuation plot for filter 2')
+        show_attenuation_plot_filter_3= st.checkbox('Show attenuation plot for filter 3')
+
+
     with col2: # elements in col2 will be displayed in the right column
 
         # Calculate the spectrum and get energy values below the tube voltage
+
         if mode: # Automatic mode
-            energy_valid, energy_flux_normalised = kramers_law(Z, energy_base_array, tube_voltage, tube_voltage, current_time_product=current_time_product,current_time_product_max=current_time_product_max)
+            energy_valid, energy_flux_normalised = kramers_law(Z, energy_base_array, tube_voltage, tube_voltage_max, current_time_product=current_time_product,current_time_product_max=current_time_product_max)
 
         else: # Manual mode
-            energy_valid, energy_flux_normalised = kramers_law(Z, energy_base_array, tube_voltage, tube_voltage, tube_current, tube_current_max, exposure_time, exposure_time_max)
+            energy_valid, energy_flux_normalised = kramers_law(Z, energy_base_array, tube_voltage, tube_voltage_max, tube_current, tube_current_max, exposure_time, exposure_time_max)
 
         # Calculate the filtered spectrum
-        energy_flux_normalised_filtered = energy_flux_normalised * relative_attenuation_mass_coeff(energy_base_array,filter_1_density, filter_1_thickness, mass_atten_coeff_1,tube_voltage) * relative_attenuation_mass_coeff(energy_base_array,filter_2_density, filter_2_thickness, mass_atten_coeff_2,tube_voltage)
+        mass_atten_coeff_1_valid, relative_attenuation_filter_1 = relative_attenuation_mass_coeff(energy_base_array,filter_1_density,filter_1_thickness,mass_atten_coeff_1,tube_voltage)
+        mass_atten_coeff_2_valid, relative_attenuation_filter_2 = relative_attenuation_mass_coeff(energy_base_array,filter_2_density,filter_2_thickness,mass_atten_coeff_2,tube_voltage)
+        mass_atten_coeff_3_valid, relative_attenuation_filter_3 = relative_attenuation_mass_coeff(energy_base_array,filter_3_density,filter_3_thickness,mass_atten_coeff_3,tube_voltage)
 
+        energy_flux_normalised_filtered = energy_flux_normalised * relative_attenuation_filter_1 * relative_attenuation_filter_2 * relative_attenuation_filter_3
+        
         # Calculate the AUC percentage for the filtered spectrum
         auc_percentage = calculate_auc_percentage(energy_flux_normalised_filtered, energy_valid, 0, tube_voltage, tube_voltage_max)
 
@@ -213,8 +198,9 @@ if __name__ == "__main__":
         median_energy_at_50pct_auc = calculate_median_energy(energy_valid, energy_flux_normalised_filtered)
 
         # Call calculate_effective_energy_and_hvl
-        energy_eff = calculate_effective_energy_and_hvl(energy_valid, energy_flux_normalised_filtered, filter_1_thickness)
+        # energy_eff = calculate_effective_energy_and_hvl(energy_valid, energy_flux_normalised_filtered, filter_1_thickness)
         
+        ###############################################################################################################################################################
         ########## Visualise the spectrum ##########
         plt.style.use(selected_style)
         
@@ -235,7 +221,7 @@ if __name__ == "__main__":
 
             # Manually position each annotation
             annotations = [
-                {"energy": energy_char[4], "peak": flux_peaks[4], "text": f"{energy_char[4]} keV", "xytext": (-20, 20)}, # L2M2
+                # {"energy": energy_char[4], "peak": flux_peaks[4], "text": f"{energy_char[4]} keV", "xytext": (-20, 20)}, # L2M2
                 {"energy": energy_char[1], "peak": flux_peaks[1], "text": f"{energy_char[1]} keV", "xytext": (20, 10)}, # KL3
                 {"energy": energy_char[2], "peak": flux_peaks[2], "text": f"{energy_char[2]} keV", "xytext": (-20, 15)}, # KM3
                 {"energy": energy_char[3], "peak": flux_peaks[3], "text": f"{energy_char[3]} keV", "xytext": (15, 0)},  # KN3
@@ -298,8 +284,21 @@ if __name__ == "__main__":
                         fontproperties=font, 
                         #arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.5"),
             )
+
+        if show_attenuation_plot_filter_1:        
+            # ax.plot(energy_valid,mass_atten_coeff_1_valid/np.max(mass_atten_coeff_1_valid),linestyle="--",linewidth=1.5,color=selected_colour)
+            ax.plot(energy_valid,relative_attenuation_filter_1,linestyle="--",linewidth=1.5,color='g')
+
+        if show_attenuation_plot_filter_2:        
+            # ax.plot(energy_valid,mass_atten_coeff_1_valid/np.max(mass_atten_coeff_1_valid),linestyle="--",linewidth=1.5,color=selected_colour)
+            ax.plot(energy_valid,relative_attenuation_filter_2,linestyle="--",linewidth=1.5,color='r')
+
+        if show_attenuation_plot_filter_3:        
+            # ax.plot(energy_valid,mass_atten_coeff_1_valid/np.max(mass_atten_coeff_1_valid),linestyle="--",linewidth=1.5,color=selected_colour)
+            ax.plot(energy_valid,relative_attenuation_filter_3,linestyle="--",linewidth=1.5,color='violet')
+
         
-        # # Annotate the AUC percentage on the plot
+        # Annotate the AUC percentage on the plot
         ax.annotate(f"Relative AUC: {auc_percentage:.2f}% (of max factors, unfiltered)", 
                     color = "k",
                     xy=(0.64, 0.95), 
@@ -312,8 +311,8 @@ if __name__ == "__main__":
         ax.set_ylabel("Relative Energy Flux", fontsize=14)
         ax.set_xlim(x_axis_limit)
         ax.set_ylim([0, y_axis_max])
-        ax.set_xticks(np.arange(0, tube_voltage_max+1, 5))
-        ax.set_yticks(np.arange(0, y_axis_max+0.05, 0.05))
+        ax.set_xticks(np.arange(0, tube_voltage_max+1, 10))
+        ax.set_yticks(np.arange(0, y_axis_max+0.05, 0.1))
 
         #ax.set_title(f"Bremsstrahlung Spectrum for Z={Z}")
 

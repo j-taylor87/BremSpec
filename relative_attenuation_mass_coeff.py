@@ -28,4 +28,4 @@ def relative_attenuation_mass_coeff(energy, density, filter_thickness, mass_atte
     mass_atten_coeff_valid = mass_atten_coeff[energy <= tube_voltage]
     attenuation_relative = np.exp(-mass_atten_coeff_valid * filter_thickness / 10 * density)  # /10 to convert thickness from mm to cm
 
-    return attenuation_relative
+    return mass_atten_coeff_valid, attenuation_relative
