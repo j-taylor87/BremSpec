@@ -51,6 +51,7 @@ def select_attenuation(filter_number, filters, data_dir, default=None):
         print("Select Filter")
 
     # Load interpolated data
+    print("Loading data from:",interpolated_data_path)
     df_interpolated = pd.read_csv(interpolated_data_path)
     mass_atten_coeff_cm2_g = df_interpolated['mass_atten_coeff_cm2_g'].to_numpy()
 
