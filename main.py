@@ -3,7 +3,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
-plt.rcParams["font.family"] = "sans-serif"
+plt.rcParams["font.family"] = "Times New Roman"
 # plt.rcParams["font.sans-serif"] = "Tahoma"
 
 # Custom functions
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         energy_base_array = np.linspace(0, tube_voltage_max, 10000) # keV
 
         # User input for mode
-        mode = st.checkbox(automatic_mode)
+        mode = st.toggle(automatic_mode,value=False)
 
         if "tube_voltage_old" not in st.session_state:
             st.session_state.tube_voltage_old = tube_voltage_default  # Default tube voltage
@@ -191,8 +191,19 @@ if __name__ == "__main__":
 
     with col2: # elements in col2 will be displayed in the right column
 
-        # Calculate the spectrum and get energy values below the tube voltage
+        with st.popover("Info"):
+                    st.markdown(""" - Select an X-ray imaging modality, technique factors (kV, mA, ms), and filter/target materials to see how these affect the 
+                                shape of the Bremsstrahlung X-ray spectrum.
+                                \n - The available energies along the x-axis will depend on the selected modality, and the x-axis can be set to scale with kV.
+                                \n - The y-axis represents the relative energy flux, normalised to the maximum energy flux for each energy.
+                                \n - The relative area under the curve (AUC), representing the normalised total beam intensity across all available 
+                                energies, is displayed in the top-right corner of the plot. This is relative to the unfiltered beam at maximum technique factors of the selected modality. 
+                                If scaling x-axis with selected kV is selected, then the AUC calculation will take this as the maximum kV.
+                                \n - Median and effective beam energy can be displayed as vertical dashed lines on the graph.
+                                \n - The characteristic X-rays of the target material can be displayed.
+                                \n - Absorption edges and attenuation graphs can be viewed for the different filter materials. """)
 
+        # Calculate the spectrum and get energy values below the tube voltage
         if mode: # Automatic mode
             energy_valid, energy_flux_normalised = kramers_law(Z, energy_base_array, tube_voltage, tube_voltage_max, current_time_product=current_time_product,current_time_product_max=current_time_product_max)
 
@@ -223,7 +234,7 @@ if __name__ == "__main__":
         font = FontProperties()
         # font.set_family('Tahoma')
 
-        fig, ax = plt.subplots(figsize=(14, 8),dpi=600)
+        fig, ax = plt.subplots(figsize=(14, 8),dpi=1600)
    
         x_axis_limit = [0, tube_voltage_max] # Max energy is set by the tube voltage
 
@@ -314,13 +325,14 @@ if __name__ == "__main__":
 
         
         # Annotate the AUC percentage on the plot
-        ax.annotate(f"Relative AUC: {auc_percentage:.2f}% (of max factors, unfiltered)", 
+        ax.annotate(f"AUC: {auc_percentage:.2f}%", 
                     color = "k",
-                    xy=(0.64, 0.95), 
+                    xy=(0.80, 0.90), 
                     xycoords="axes fraction", 
-                    fontsize=11,
+                    fontsize=18,
                     fontproperties=font,
-                    bbox=dict(boxstyle=None, fc="0.9"))
+                    # bbox=dict(boxstyle=None, fc="0.9")
+                    )
 
         ax.set_xlabel("Photon Energy E (keV)", fontsize=14)
         ax.set_ylabel("Relative Energy Flux", fontsize=14)
@@ -335,5 +347,4 @@ if __name__ == "__main__":
         ax.grid(show_grid)
 
         st.pyplot(fig)
-
         
