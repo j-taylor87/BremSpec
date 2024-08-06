@@ -23,7 +23,7 @@ def relative_attenuation_mass_coeff(energy, density, filter_thickness, mass_atte
     Note:
     - The NIST XCOM calculator (https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html) can be used 
       to obtain mass attenuation coefficients for different materials and energies.
-    - The thickness of the material is converted from mm to cm within the function for calculation purposes.
+    - The thickness of the material is converted from mm to cm within the function to match the density in g/cm3.
     """
     mass_atten_coeff_valid = mass_atten_coeff[energy <= tube_voltage]
     exponent = -mass_atten_coeff_valid * filter_thickness / 10 * density # /10 to convert thickness from mm to cm to work with density in g/cm3

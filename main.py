@@ -85,7 +85,6 @@ if __name__ == "__main__":
             else:
                 # Calculate the new current-time product
                 current_time_product = st.session_state.current_time_product_old*(st.session_state.tube_voltage_old / tube_voltage) ** 2.0
-                # current_time_product = st.session_state.current_time_product_old
                 current_time_product_display = st.write("Current-Time Product (mAs): ", round(current_time_product,0))
                 
                 # Update the old values for the next run
@@ -95,6 +94,7 @@ if __name__ == "__main__":
         else: # Manual mode
             tube_voltage = st.slider("Tube Voltage (kV)", min_value=int(tube_voltage_min), max_value=int(tube_voltage_max), value=int(tube_voltage_default))
             tube_current = st.slider("Tube Current (mA)", min_value=int(tube_current_min), max_value=int(tube_current_max), value=int(tube_current_default))
+            
             if modality == "CT":
                 exposure_time = st.slider("Rotation Time (ms)", min_value=exposure_time_min, max_value=exposure_time_max, value=exposure_time_default,format="%.0f")
             else:
@@ -128,32 +128,7 @@ if __name__ == "__main__":
         mass_atten_coeff_3, filter_3_material, filter_3_density, filter_3_thickness = select_attenuation(3,filter_material_selection_3,data_dir)
 
         # User input for target material
-        target_material = st.selectbox("Target Material", ["W (Z=74)", "Rh (Z=45) (WIP)", "Mo (Z=42) (WIP)"])
-        if target_material == "W (Z=74)":
-            Z = 74
-
-            # Characteristic x-ray energies for tungsten (W) in keV (a select few)
-            # https://physics.nist.gov/PhysRefData/XrayTrans/Html/search.html
-            # https://www.researchgate.net/publication/344795585_Simulation_of_X-Ray_Shielding_Effect_of_Different_Materials_Based_on_MCNP5#pf3
-            
-            energy_char = np.array([57.98, # KL2
-                                    59.32, # KL3
-                                    67.25, # KM3
-                                    69.10, # KN3
-                                    # 8.97 # L2M2
-                                    ]) 
-
-            # Estimated relative energy flux of characteristic x-ray peaks
-            # These values are just crude estimates of the heights of the peaks relative to the maximum energy flux
-            flux_peaks = np.array([1.1, 1.3, 0.8, 0.7])
-        
-
-        elif target_material == "Rh (Z=45)":
-            Z = 45
-
-        elif target_material == "Mo (Z=42)":
-            Z = 42
-
+        target_material = st.selectbox("Target Material", ["W (Z=74)", "Rh (Z=45)", "Mo (Z=42)"])
 
     with col3: # col3 before col2 to define the show grid button
         # Dropdown for selecting plot style
@@ -184,10 +159,12 @@ if __name__ == "__main__":
         show_effective_energy = st.checkbox("Show Effective Beam Energy (WIP)", value=False)
 
         # Checkbox for showing attenuation plot
-        show_attenuation_plot_filter_1= st.checkbox('Show attenuation plot for filter 1')
-        show_attenuation_plot_filter_2= st.checkbox('Show attenuation plot for filter 2')
-        show_attenuation_plot_filter_3= st.checkbox('Show attenuation plot for filter 3/attenuator')
-
+        show_transmission_plot_filter_1= st.checkbox('Show transmission plot for Filter 1')
+        show_attenuation_plot_filter_1= st.checkbox('Show mass attenuation plot for Filter 1')
+        show_transmission_plot_filter_2= st.checkbox('Show transmission plot for Filter 2')
+        show_attenuation_plot_filter_2= st.checkbox('Show mass attenuation plot for Filter 2')
+        show_transmission_plot_filter_3= st.checkbox('Show transmission plot for Filter 3/Attenuator')
+        show_attenuation_plot_filter_3= st.checkbox('Show mass attenuation plot for Filter 3')
 
     with col2: # elements in col2 will be displayed in the right column
 
@@ -205,10 +182,10 @@ if __name__ == "__main__":
 
         # Calculate the spectrum and get energy values below the tube voltage
         if mode: # Automatic mode
-            energy_valid, energy_flux_normalised = kramers_law(Z, energy_base_array, tube_voltage, tube_voltage_max, current_time_product=current_time_product,current_time_product_max=current_time_product_max)
+            energy_valid, energy_flux_normalised = kramers_law(target_material, energy_base_array, tube_voltage, tube_voltage_max, current_time_product=current_time_product,current_time_product_max=current_time_product_max)
 
         else: # Manual mode
-            energy_valid, energy_flux_normalised = kramers_law(Z, energy_base_array, tube_voltage, tube_voltage_max, tube_current, tube_current_max, exposure_time, exposure_time_max)
+            energy_valid, energy_flux_normalised = kramers_law(target_material, energy_base_array, tube_voltage, tube_voltage_max, tube_current, tube_current_max, exposure_time, exposure_time_max)
 
         # Calculate the filtered spectrum
         mass_atten_coeff_1_valid, relative_attenuation_filter_1 = relative_attenuation_mass_coeff(energy_base_array,filter_1_density,filter_1_thickness,mass_atten_coeff_1,tube_voltage)
@@ -240,19 +217,10 @@ if __name__ == "__main__":
 
         if show_characteristic_xray_peaks:
             # Add characteristic peaks to the spectrum
-            energy_valid, energy_flux_normalised_filtered = add_characteristic_peaks(energy_valid, energy_flux_normalised_filtered, energy_char, flux_peaks, tube_voltage)
+            energy_valid, energy_flux_normalised_filtered, annotations = add_characteristic_peaks(target_material,energy_valid, energy_flux_normalised_filtered, tube_voltage)
 
             # Plot the spectrum with characteristic peaks
             ax.plot(energy_valid, energy_flux_normalised_filtered,linestyle="-",linewidth=1.5,color=selected_colour)
-
-            # Manually position each annotation
-            annotations = [
-                # {"energy": energy_char[4], "peak": flux_peaks[4], "text": f"{energy_char[4]} keV", "xytext": (-20, 20)}, # L2M2
-                {"energy": energy_char[1], "peak": flux_peaks[1], "text": f"{energy_char[1]} keV", "xytext": (20, 10)}, # KL3
-                {"energy": energy_char[2], "peak": flux_peaks[2], "text": f"{energy_char[2]} keV", "xytext": (-20, 15)}, # KM3
-                {"energy": energy_char[3], "peak": flux_peaks[3], "text": f"{energy_char[3]} keV", "xytext": (15, 0)},  # KN3
-                {"energy": energy_char[0], "peak": flux_peaks[0], "text": f"{energy_char[0]} keV", "xytext": (-40, 10)}, # KL2
-            ]
 
             # Annotate each peak
             for ann in annotations:
@@ -311,17 +279,29 @@ if __name__ == "__main__":
                         #arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.5"),
             )
 
-        if show_attenuation_plot_filter_1:        
+        if show_transmission_plot_filter_1:        
             # ax.plot(energy_valid,mass_atten_coeff_1_valid/np.max(mass_atten_coeff_1_valid),linestyle="--",linewidth=1.5,color=selected_colour)
             ax.plot(energy_valid,relative_attenuation_filter_1,linestyle="--",linewidth=1.5,color='g')
 
-        if show_attenuation_plot_filter_2:        
+        if show_attenuation_plot_filter_1:        
+            ax_right = ax.twinx()
+            ax_right.semilogy(energy_valid,mass_atten_coeff_1_valid,linestyle=":",linewidth=1.5,color='orange')
+
+        if show_transmission_plot_filter_2:        
             # ax.plot(energy_valid,mass_atten_coeff_1_valid/np.max(mass_atten_coeff_1_valid),linestyle="--",linewidth=1.5,color=selected_colour)
             ax.plot(energy_valid,relative_attenuation_filter_2,linestyle="--",linewidth=1.5,color='r')
 
-        if show_attenuation_plot_filter_3:        
+        if show_attenuation_plot_filter_2:        
+            ax_right = ax.twinx()
+            ax_right.semilogy(energy_valid,mass_atten_coeff_1_valid,linestyle=":",linewidth=1.5,color='cyan')
+
+        if show_transmission_plot_filter_3:        
             # ax.plot(energy_valid,mass_atten_coeff_1_valid/np.max(mass_atten_coeff_1_valid),linestyle="--",linewidth=1.5,color=selected_colour)
             ax.plot(energy_valid,relative_attenuation_filter_3,linestyle="--",linewidth=1.5,color='violet')
+
+        if show_attenuation_plot_filter_3:        
+            ax_right = ax.twinx()
+            ax_right.semilogy(energy_valid,mass_atten_coeff_1_valid,linestyle=":",linewidth=1.5,color='cyan')
 
         
         # Annotate the AUC percentage on the plot

@@ -24,9 +24,9 @@ def get_modality_settings(modality):
 
     elif modality == "Mammography (WIP)":
         return {
-            "tube_voltage_max": 50.0,
+            "tube_voltage_max": 40.0,
             "tube_voltage_min": 10.0,
-            "tube_voltage_default": 30.0,
+            "tube_voltage_default": 26.0,
 
             "tube_current_max": 100.0,
             "tube_current_min": 1.0,

@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.constants import speed_of_light
 
-def kramers_law(Z, energy, tube_voltage, tube_voltage_max, tube_current=None, tube_current_max=None, exposure_time=None, exposure_time_max=None, current_time_product=None, current_time_product_max=None):
+def kramers_law(target_material, energy, tube_voltage, tube_voltage_max, tube_current=None, tube_current_max=None, exposure_time=None, exposure_time_max=None, current_time_product=None, current_time_product_max=None):
     """
     Calculate the normalised Bremsstrahlung spectrum based on Kramers" law for a given target material and set of operational parameters.
 
@@ -22,8 +22,16 @@ def kramers_law(Z, energy, tube_voltage, tube_voltage_max, tube_current=None, tu
                       and the second array is the corresponding normalised energy flux of the radiation.
     """
 
-    k_l = 1  # Empirical constant
+    if target_material == "W (Z=74)":
+        Z = 74
+    
+    elif target_material == "Rh (Z=45)":
+        Z = 45
 
+    elif target_material == "Mo (Z=42)":
+        Z = 42
+
+    k_l = 1  # Empirical constant
     # Filter out energy values that are greater than the tube_voltage
     energy_valid = energy[energy <= tube_voltage]
 
@@ -36,6 +44,9 @@ def kramers_law(Z, energy, tube_voltage, tube_voltage_max, tube_current=None, tu
         energy_flux_max = (k_l * Z * tube_current_max * exposure_time_max / 1000) / (2.0 * np.pi * speed_of_light) * (tube_voltage_max - energy_valid)
 
     # Normalise energy flux
-    energy_flux_normalised = energy_flux / np.max(energy_flux_max)
+    energy_flux_normalised = energy_flux / np.max(energy_flux_max) 
+
+    # Scale normalised energy flux relative to Tungsten, to show decreased X-ray production for other targets
+    energy_flux_normalised = energy_flux_normalised* Z/74
 
     return energy_valid, energy_flux_normalised

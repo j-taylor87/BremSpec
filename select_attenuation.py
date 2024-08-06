@@ -69,7 +69,7 @@ def select_attenuation(filter_number, filter_material_selection, data_dir):
 
     elif filter_material_selection == "PMMA (Zeff~6.56)":
         density = 1.18  # g/cm^3
-        filter_thickness = st.slider(f"Filter {filter_number}/Attenuator  Thickness (mm) - PMMA", min_value=0.0, max_value=300.0, step=5.0, value=0.0, key=f"filter_{filter_number}_thickness_PMMA")
+        filter_thickness = st.slider(f"Filter {filter_number}/Attenuator  Thickness (mm) - PMMA", min_value=0.0, max_value=300.0, step=2.0, value=0.0, key=f"filter_{filter_number}_thickness_PMMA")
         file_name = "interpolated_NIST_mass_attenuation_coeff_PMMA.csv"
     
     elif filter_material_selection == "Soft Tissue (Zeff~7.52)":
