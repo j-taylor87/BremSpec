@@ -2,9 +2,9 @@ import streamlit as st
 import pandas as pd
 import os
 
+@st.fragment
 # @st.cache_data(experimental_allow_widgets=True)
 @st.cache_data
-
 def load_data(data_dir, file_name):
     """
     Loads the interpolated mass attenuation coefficients from a CSV file.
@@ -17,11 +17,14 @@ def load_data(data_dir, file_name):
     np.array: The mass attenuation coefficients.
     """
     interpolated_data_path = os.path.join(data_dir, file_name)
-    df_interpolated = pd.read_csv(interpolated_data_path)
-    mass_atten_coeff_cm2_g = df_interpolated['mass_atten_coeff_cm2_g'].to_numpy()
-    return mass_atten_coeff_cm2_g
+    df_mass_atten = pd.read_csv(interpolated_data_path)
 
-def select_attenuation(filter_number, filter_material_selection, data_dir):
+    energy_base_array = df_mass_atten['energy_keV'].to_numpy()
+    mass_atten_coeff_cm2_g = df_mass_atten['mass_atten_coeff_cm2_g'].to_numpy()
+    
+    return energy_base_array, mass_atten_coeff_cm2_g
+
+def select_attenuation(filter_number, filter_material_selection, data_dir, modality):
     """
     Selects a filter material and thickness, and reads its interpolated mass attenuation coefficients.
 
@@ -29,6 +32,8 @@ def select_attenuation(filter_number, filter_material_selection, data_dir):
     filter_number (int): The number of the filter (used for labeling in the user interface).
     filter_material_selection (str): The selected filter material.
     data_dir (str): The directory where the data files are stored.
+
+    References: ICRU Report 44
 
     Returns:
     tuple:
@@ -39,7 +44,10 @@ def select_attenuation(filter_number, filter_material_selection, data_dir):
     """
     if filter_material_selection == "Al (Z=13)":
         density = 2.7  # g/cm^3
-        filter_thickness = st.slider(f"Filter {filter_number} Thickness (mm) - Al", min_value=0.0, max_value=21.0, step=0.05, value=2.0, key=f"filter_{filter_number}_thickness_Al")
+        if modality == "Mammography (WIP)":
+            filter_thickness = st.slider(f"Filter {filter_number} Thickness (mm) - Al", min_value=0.0, max_value=2.0, step=0.0001, value=0.0, key=f"filter_{filter_number}_thickness_Al")
+        else:
+            filter_thickness = st.slider(f"Filter {filter_number} Thickness (mm) - Al", min_value=0.0, max_value=21.0, step=0.05, value=1.0, key=f"filter_{filter_number}_thickness_Al")
         file_name = "interpolated_NIST_mass_attenuation_coeff_Al.csv"
         
     elif filter_material_selection == "Cu (Z=29)":
@@ -66,34 +74,55 @@ def select_attenuation(filter_number, filter_material_selection, data_dir):
         density = 10.5  # g/cm^3
         filter_thickness = st.slider(f"Filter {filter_number} Thickness (mm) - Ag", min_value=0.0, max_value=0.1, step=1E-6, value=0.0, key=f"filter_{filter_number}_thickness_Ag")
         file_name = "interpolated_NIST_mass_attenuation_coeff_Ag.csv"
+    
+    elif filter_material_selection == "I (Z=53)":
+        density = 4.93  # g/cm^3
+        filter_thickness = st.slider(f"Filter {filter_number} Thickness (mm) - I", min_value=0.0, max_value=5.0, step=0.001, value=0.0, key=f"filter_{filter_number}_thickness_I")
+        file_name = "interpolated_NIST_mass_attenuation_coeff_I.csv"
+
+    elif filter_material_selection == "Sn (Z=50)":
+        density = 7.29  # g/cm^3
+        filter_thickness = st.slider(f"Filter {filter_number} Thickness (mm) - Sn", min_value=0.0, max_value=1.0, step=0.001, value=0.0, key=f"filter_{filter_number}_thickness_Sn")
+        file_name = "interpolated_NIST_mass_attenuation_coeff_Sn.csv"
 
     elif filter_material_selection == "PMMA (Zeff~6.56)":
         density = 1.18  # g/cm^3
-        filter_thickness = st.slider(f"Filter {filter_number}/Attenuator  Thickness (mm) - PMMA", min_value=0.0, max_value=300.0, step=2.0, value=0.0, key=f"filter_{filter_number}_thickness_PMMA")
+        filter_thickness = st.slider(f"Filter {filter_number}/Attenuator  Thickness (mm) - PMMA", min_value=0.0, max_value=300.0, step=1.0, value=0.0, key=f"filter_{filter_number}_thickness_PMMA")
         file_name = "interpolated_NIST_mass_attenuation_coeff_PMMA.csv"
     
     elif filter_material_selection == "Soft Tissue (Zeff~7.52)":
         density = 1.03  # g/cm^3
-        filter_thickness = st.slider(f"Filter {filter_number}/Attenuator Thickness (mm) - Soft Tissue", min_value=0.0, max_value=300.0, step=5.0, value=0.0, key=f"filter_{filter_number}_thickness_SoftTissue")
+        filter_thickness = st.slider(f"Filter {filter_number}/Attenuator Thickness (mm) - Soft Tissue", min_value=0.0, max_value=300.0, step=1.0, value=0.0, key=f"filter_{filter_number}_thickness_SoftTissue")
         file_name = "interpolated_NIST_mass_attenuation_coeff_TissueSoft4.csv"
     
     elif filter_material_selection == "Cortical Bone (Zeff~13.98)":
         density = 1.92  # g/cm^3
-        filter_thickness = st.slider(f"Filter {filter_number}/Attenuator Thickness (mm) - Cortical Bone", min_value=0.0, max_value=100.0, step=5.0, value=0.0, key=f"filter_{filter_number}_thickness_CorticalBone")
+        filter_thickness = st.slider(f"Filter {filter_number}/Attenuator Thickness (mm) - Cortical Bone", min_value=0.0, max_value=50.0, step=0.1, value=0.0, key=f"filter_{filter_number}_thickness_CorticalBone")
         file_name = "interpolated_NIST_mass_attenuation_coeff_BoneCortical.csv"
     
     elif filter_material_selection == "Breast Tissue (Zeff~7.88)":
         density = 1.02  # g/cm^3
-        filter_thickness = st.slider(f"Filter {filter_number}/Attenuator  Thickness (mm) - Breast Tissue", min_value=0.0, max_value=150.0, step=5.0, value=0.0, key=f"filter_{filter_number}_thickness_BreastTissue")
+        filter_thickness = st.slider(f"Filter {filter_number}/Attenuator  Thickness (mm) - Breast Tissue", min_value=0.0, max_value=150.0, step=1.0, value=0.0, key=f"filter_{filter_number}_thickness_BreastTissue")
         file_name = "interpolated_NIST_mass_attenuation_coeff_TissueBreast.csv"
-
     
+    elif filter_material_selection == "Adipose Tissue (Zeff~6.44)":
+        density = 0.9  # g/cm^3
+        filter_thickness = st.slider(f"Filter {filter_number}/Attenuator  Thickness (mm) - Adipose Tissue", min_value=0.0, max_value=150.0, step=1.0, value=0.0, key=f"filter_{filter_number}_thickness_AdiposeTissue")
+        file_name = "interpolated_NIST_mass_attenuation_coeff_TissueAdipose.csv"
+    
+    elif filter_material_selection == "Lung Tissue (Zeff~8.0)":
+        density = 0.24  # g/cm^3
+        filter_thickness = st.slider(f"Filter {filter_number}/Attenuator  Thickness (mm) - Lung Tissue", min_value=0.0, max_value=150.0, step=1.0, value=0.0, key=f"filter_{filter_number}_thickness_LungTissue")
+        file_name = "interpolated_NIST_mass_attenuation_coeff_TissueLung.csv"
+
     else:
         st.warning("Select a valid filter material")
         return None, None, None, None
 
     # Load data using the cached function
-    mass_atten_coeff_cm2_g = load_data(data_dir, file_name)
+    energy_base_array, mass_atten_coeff_cm2_g = load_data(data_dir, file_name)
     selected_filter = filter_material_selection
+    # print(file_name)
+    # print(mass_atten_coeff_cm2_g)
 
-    return mass_atten_coeff_cm2_g, selected_filter, density, filter_thickness
+    return energy_base_array, mass_atten_coeff_cm2_g, selected_filter, density, filter_thickness

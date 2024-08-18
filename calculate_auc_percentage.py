@@ -1,5 +1,7 @@
 import numpy as np
+import streamlit as st
 
+@st.fragment
 def calculate_auc_percentage(energy_flux_normalised_filtered, energy_valid, energy_lower_bound, energy_upper_bound, tube_voltage_max):
     """
     Calculate the AUC percentage for a filtered energy spectrum within a specified energy range.

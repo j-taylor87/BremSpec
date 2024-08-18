@@ -72,17 +72,7 @@ def interpolate_and_save(file_path, base_energy_array, output_file_path):
     # interpolate_func = interp1d(energy_keV, mass_atten_coeff_cm2_g, kind="linear", fill_value="extrapolate")
     interpolate_func = PchipInterpolator(energy_keV, mass_atten_coeff_cm2_g)
     interpolated_mass_atten_coeffs = interpolate_func(base_energy_array)
-
-    # # Clip negative values to zero
-    # interpolated_mass_atten_coeffs = np.maximum(interpolated_mass_atten_coeffs, 0)
-
-    # Determine the minimum and maximum values from the original data
-    min_energy = np.min(energy_keV)
-    max_value = np.max(mass_atten_coeff_cm2_g)
-
-    # Set values at energies less than the minimum original energy to the maximum attenuation value
-    interpolated_mass_atten_coeffs[base_energy_array < min_energy] = max_value*1.2
-       
+    
     # Save to new CSV
     df_interpolated = pd.DataFrame({
         'energy_keV': base_energy_array,
@@ -93,7 +83,7 @@ def interpolate_and_save(file_path, base_energy_array, output_file_path):
 data_dir = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 # Base energy array (example)
-base_energy_array = np.linspace(0, 150, 2000)  # 0 keV to 150 keV in n steps
+base_energy_array = np.linspace(0, 150, 5000)  # 0 keV to 150 keV in n steps
 
 # Interpolate and save for each CSV file in the data directory
 for file_name in os.listdir(data_dir):

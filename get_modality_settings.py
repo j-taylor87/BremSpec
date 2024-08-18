@@ -1,3 +1,7 @@
+import streamlit as st
+
+@st.fragment
+
 def get_modality_settings(modality):
     if modality == "General X-ray":
         return {
@@ -17,7 +21,7 @@ def get_modality_settings(modality):
             "current_time_product_min": 0.0,
             "current_time_product_default": 100.0,
 
-            "filters": ["Al (Z=13)", "Cu (Z=29)","PMMA (Zeff~6.56)","Soft Tissue (Zeff~7.52)","Cortical Bone (Zeff~13.98)"],
+            "filters": ["Al (Z=13)", "Cu (Z=29)","PMMA (Zeff~6.56)","Soft Tissue (Zeff~7.52)","Cortical Bone (Zeff~13.98)","Lung Tissue (Zeff~8.0)","Adipose Tissue (Zeff~6.44)"],
 
             "automatic_mode": "Automatic Exposure Control (AEC) (WIP)"
         }
@@ -28,19 +32,19 @@ def get_modality_settings(modality):
             "tube_voltage_min": 10.0,
             "tube_voltage_default": 26.0,
 
-            "tube_current_max": 100.0,
+            "tube_current_max": 150.0,
             "tube_current_min": 1.0,
-            "tube_current_default": 80.0,
+            "tube_current_default": 120.0,
 
-            "exposure_time_max": 200.0,
+            "exposure_time_max": 2000.0,
             "exposure_time_min": 1.0,
-            "exposure_time_default": 150.0,
+            "exposure_time_default": 1000.0,
 
             "current_time_product_max": 100.0,
             "current_time_product_min": 1.0,
             "current_time_product_default": 20.0,
 
-            "filters": ["Be (Z=4)","Al (Z=13)", "Mo (Z=42)", "Rh (Z=45)", "Ag (Z=47)","PMMA (Zeff~6.56)","Breast Tissue (Zeff~7.88)"],
+            "filters": ["Be (Z=4)","Al (Z=13)", "Mo (Z=42)", "Rh (Z=45)", "Ag (Z=47)","I (Z=53)","PMMA (Zeff~6.56)","Breast Tissue (Zeff~7.88)","Adipose Tissue (Zeff~6.44)"],
 
             "automatic_mode": "Automatic Exposure Control (AEC) (WIP)"
         }
@@ -53,17 +57,17 @@ def get_modality_settings(modality):
 
             "tube_current_max": 500.0,
             "tube_current_min": 1.0,
-            "tube_current_default": 100.0,
+            "tube_current_default": 200.0,
 
-            "exposure_time_max": 1000.0,
+            "exposure_time_max": 100.0,
             "exposure_time_min": 1.0,
-            "exposure_time_default": 0.1,
+            "exposure_time_default": 10.0,
 
             "pulse_width_max": 20.0,
             "pulse_width_min": 1.0,
             "pulse_width_default": 8.0,
 
-            "filters": ["Al (Z=13)", "Cu (Z=29)","PMMA (Zeff~6.56)"],
+            "filters": ["Al (Z=13)", "Cu (Z=29)","I (Z=53)","PMMA (Zeff~6.56)","Soft Tissue (Zeff~7.52)","Cortical Bone (Zeff~13.98)","Lung Tissue (Zeff~8.0)","Adipose Tissue (Zeff~6.44)"],
 
             "automatic_mode": "Automatic Dose Rate Control (ADRC) (WIP)"
         }
@@ -78,11 +82,11 @@ def get_modality_settings(modality):
             "tube_current_min": 0.0,
             "tube_current_default": 500.0,
 
-            "exposure_time_max": 2.0,
+            "exposure_time_max": 2000.0,
             "exposure_time_min": 0.0,
-            "exposure_time_default": 0.5,
+            "exposure_time_default": 500.0,
 
-            "filters": ["Al (Z=13)", "Cu (Z=29)", "Sn (Z=50)"],
+            "filters": ["Al (Z=13)", "Cu (Z=29)", "Sn (Z=50)", "I (Z=53)","I (Z=53)","PMMA (Zeff~6.56)","Soft Tissue (Zeff~7.52)","Cortical Bone (Zeff~13.98)","Lung Tissue (Zeff~8.0)","Adipose Tissue (Zeff~6.44)"],
 
             "automatic_mode": "Automatic Exposure Control (AEC) (WIP)"
         }

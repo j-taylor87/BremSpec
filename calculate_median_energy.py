@@ -1,5 +1,7 @@
 import numpy as np
+import streamlit as st
 
+@st.fragment
 def calculate_median_energy(energy_valid, energy_flux_normalised_filtered):
 
     # Calculate the cumulative sum of the energy fluxes

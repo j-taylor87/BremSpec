@@ -1,6 +1,8 @@
 import numpy as np
+import streamlit as st
 
-def relative_attenuation_mass_coeff(energy, density, filter_thickness, mass_atten_coeff, tube_voltage):
+@st.fragment
+def relative_attenuation_mass_coeff(energy, density, filter_thickness, mass_atten_coeff, tube_voltage, tube_voltage_min):
     """
     Calculate the relative attenuation of radiation through a material based on its mass attenuation coefficient.
 

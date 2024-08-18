@@ -1,7 +1,9 @@
 import numpy as np
 from scipy.constants import speed_of_light
+import streamlit as st
 
-def kramers_law(target_material, energy, tube_voltage, tube_voltage_max, tube_current=None, tube_current_max=None, exposure_time=None, exposure_time_max=None, current_time_product=None, current_time_product_max=None):
+@st.fragment
+def kramers_law(target_material, energy, tube_voltage, tube_voltage_max, tube_voltage_min, tube_current=None, tube_current_max=None, exposure_time=None, exposure_time_max=None, current_time_product=None, current_time_product_max=None):
     """
     Calculate the normalised Bremsstrahlung spectrum based on Kramers" law for a given target material and set of operational parameters.
 

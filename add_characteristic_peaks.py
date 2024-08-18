@@ -1,5 +1,7 @@
 import numpy as np
+import streamlit as st
 
+@st.fragment
 def add_characteristic_peaks(target_material, energy, energy_flux_normalised_filtered, tube_voltage):
     """
     Integrate characteristic X-ray peaks into an existing normalised Bremsstrahlung spectrum.
@@ -37,15 +39,15 @@ def add_characteristic_peaks(target_material, energy, energy_flux_normalised_fil
 
         # Estimated relative energy flux of characteristic x-ray peaks
         # These values are just crude estimates of the heights of the peaks relative to the maximum energy flux
-        flux_peaks = np.array([1.1, 1.3, 0.8, 0.7])
+        flux_peaks = np.array([1.2, 1.4, 1.1, 1.01])
 
                     # Manually position each annotation
         annotations = [
             # {"energy": energy_char[4], "peak": flux_peaks[4], "text": f"{energy_char[4]} keV", "xytext": (-20, 20)}, # L2M2
-            {"energy": energy_char[1], "peak": flux_peaks[1], "text": f"{energy_char[1]} keV", "xytext": (20, 10)}, # KL3
-            {"energy": energy_char[2], "peak": flux_peaks[2], "text": f"{energy_char[2]} keV", "xytext": (-20, 15)}, # KM3
-            {"energy": energy_char[3], "peak": flux_peaks[3], "text": f"{energy_char[3]} keV", "xytext": (15, 0)},  # KN3
-            {"energy": energy_char[0], "peak": flux_peaks[0], "text": f"{energy_char[0]} keV", "xytext": (-40, 10)}, # KL2
+            {"energy": energy_char[1], "peak": flux_peaks[1], "text": f"{energy_char[1]} keV", "xytext": (-20, -40)}, # KL3
+            {"energy": energy_char[2], "peak": flux_peaks[2], "text": f"{energy_char[2]} keV", "xytext": (40, -30)}, # KM3
+            {"energy": energy_char[3], "peak": flux_peaks[3], "text": f"{energy_char[3]} keV", "xytext": (45, -10)},  # KN3
+            {"energy": energy_char[0], "peak": flux_peaks[0], "text": f"{energy_char[0]} keV", "xytext": (-45, -10)}, # KL2
         ]
 
     elif target_material == "Rh (Z=45)":
@@ -55,11 +57,11 @@ def add_characteristic_peaks(target_material, energy, energy_flux_normalised_fil
                                 22.7, # KM2
                                 ]) 
         
-        flux_peaks = np.array([1.3, 0.8,])
+        flux_peaks = np.array([1.5, 1.1,])
 
         annotations = [
-            {"energy": energy_char[0], "peak": flux_peaks[0], "text": f"{energy_char[0]} keV", "xytext": (20, 10)}, # KL3
-            {"energy": energy_char[1], "peak": flux_peaks[0], "text": f"{energy_char[1]} keV", "xytext": (-20, 15)}, # KM2
+            {"energy": energy_char[0], "peak": flux_peaks[0], "text": f"{energy_char[0]} keV", "xytext": (-40, -10)}, # KL3
+            {"energy": energy_char[1], "peak": flux_peaks[0], "text": f"{energy_char[1]} keV", "xytext": (30, -15)}, # KM2
         ]
 
     elif target_material == "Mo (Z=42)":
@@ -69,11 +71,11 @@ def add_characteristic_peaks(target_material, energy, energy_flux_normalised_fil
                                 19.6, # KM2
                                 ]) 
         
-        flux_peaks = np.array([1.3, 0.8,])
+        flux_peaks = np.array([1.5, 1.1,])
 
         annotations = [
-            {"energy": energy_char[0], "peak": flux_peaks[0], "text": f"{energy_char[0]} keV", "xytext": (20, 10)}, # KL3
-            {"energy": energy_char[1], "peak": flux_peaks[0], "text": f"{energy_char[1]} keV", "xytext": (-20, 15)}, # KM2
+            {"energy": energy_char[0], "peak": flux_peaks[0], "text": f"{energy_char[0]} keV", "xytext": (-40, -10)}, # KL3
+            {"energy": energy_char[1], "peak": flux_peaks[0], "text": f"{energy_char[1]} keV", "xytext": (30, -15)}, # KM2
         ]
 
     # Filter out energies and their corresponding flux values above the tube_voltage
