@@ -402,7 +402,7 @@ if __name__ == "__main__":
             # Annotate AUC percentage
             fig.add_annotation(
                 x=0.95, 
-                y=0.9, 
+                y=1.12, 
                 text=f"AUC = {auc_percentage:.2f}%", 
                 showarrow=False, 
                 xref="paper", 
