@@ -23,7 +23,7 @@ def get_modality_settings(modality):
 
             "filters": ["Al (Z=13)", "Cu (Z=29)","PMMA (Zeff~6.56)","Soft Tissue (Zeff~7.52)","Cortical Bone (Zeff~13.98)","Lung Tissue (Zeff~8.0)","Adipose Tissue (Zeff~6.44)"],
 
-            "automatic_mode": "Automatic Exposure Control (AEC) (WIP)"
+            "automatic_mode": "Automatic mAs"
         }
 
     elif modality == "Mammography (WIP)":
@@ -46,7 +46,7 @@ def get_modality_settings(modality):
 
             "filters": ["Be (Z=4)","Al (Z=13)", "Mo (Z=42)", "Rh (Z=45)", "Ag (Z=47)","I (Z=53)","PMMA (Zeff~6.56)","Breast Tissue (Zeff~7.88)","Adipose Tissue (Zeff~6.44)"],
 
-            "automatic_mode": "Automatic Exposure Control (AEC) (WIP)"
+            "automatic_mode": "Automatic mAs (WIP)"
         }
 
     elif modality == "Fluoroscopy (WIP)":
@@ -88,7 +88,7 @@ def get_modality_settings(modality):
 
             "filters": ["Al (Z=13)", "Cu (Z=29)", "Sn (Z=50)", "I (Z=53)","I (Z=53)","PMMA (Zeff~6.56)","Soft Tissue (Zeff~7.52)","Cortical Bone (Zeff~13.98)","Lung Tissue (Zeff~8.0)","Adipose Tissue (Zeff~6.44)"],
 
-            "automatic_mode": "Automatic Exposure Control (AEC) (WIP)"
+            "automatic_mode": "Dose Modulation (WIP)"
         }
 
     else:

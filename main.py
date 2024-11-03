@@ -58,14 +58,14 @@ if __name__ == "__main__":
             st.markdown(""" - Select an X-ray imaging modality, technique factors (kV, mA, ms), and filter/target materials to see how these factors affect the 
                     shape of the Bremsstrahlung X-ray spectrum.
                     \n - The available energies along the x-axis will depend on the selected modality, and the x-axis can be set to scale with kV.
-                    \n - The y-axis represents the relative energy flux, normalised to the maximum energy flux for each energy.
-                    \n - Scaling, zooming, and panning tools can be found on the top right of the graph when hovering over it with the mouse, or under "Axis Options".
+                    \n - The y-axis represents the relative energy flux: the energy flux of each energy normalised to the maximum energy flux.
+                    \n - Scaling, zooming, and panning tools can be found on the top right of the graph when hovering over it with the mouse. "Axis Options" contains related settings.
                     \n - The area under the curve (AUC), representing the normalised total beam intensity across all available 
                     energies, is displayed in the top-right corner of the plot. This is a relative percentage of the unfiltered beam at maximum technique factors of the selected modality, with a tungsten target. 
                     If scaling x-axis with selected kV is selected, then the AUC calculation will take this as the maximum kV.
-                    \n - Median and effective beam energy can be displayed as vertical dashed lines on the graph.
+                    \n - Median, mean, and peak beam energy can be displayed as vertical lines on the graph. Effective energy and HVL are a WIP.
                     \n - The characteristic X-rays of the anode target material can be displayed.
-                    \n - Attenuation and tranmission plots can be viewed for the different filter materials. Especially useful for visualising absorption edges.""")
+                    \n - Attenuation and tranmission plots can be viewed for the different filter materials. This is especially useful for visualising absorption edges.""")
         
         # User input for modality
         modality = st.selectbox("Modality", ["General X-ray", "Mammography (WIP)", "Fluoroscopy (WIP)","CT (WIP)"])  # Add more modalities as needed
