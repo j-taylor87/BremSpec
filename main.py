@@ -30,7 +30,7 @@ st.set_page_config(layout="wide",
                 #         'Get Help': '',
                 #         'Report a bug': "",
                 #         'About': "!"}
-                    )
+)
 
 # Main function
 if __name__ == "__main__":
@@ -49,7 +49,7 @@ if __name__ == "__main__":
                    'plotly_white', 
                    'plotly_dark', 
                    'presentation'
-                   ]
+    ]
     
 
     with col1: # elements in col1will display in the left column
@@ -314,7 +314,8 @@ if __name__ == "__main__":
                                     y=energy_flux_normalised_filtered, 
                                     mode='lines', 
                                     line=dict(color=selected_colour, width=1.5), 
-                                    name="Spectrum"))
+                                    name="Spectrum")
+                         )
 
             # Add characteristic peaks
             if show_characteristic_xray_peaks:
@@ -345,7 +346,8 @@ if __name__ == "__main__":
                                     mode='lines', 
                                     fill='tozeroy', 
                                     line=dict(color=selected_colour, width=1.5), 
-                                    name="Filled Area"))
+                                    name="Filled Area")
+                         )
 
             # Add vertical line for median energy
             if show_median_energy:
@@ -365,11 +367,13 @@ if __name__ == "__main__":
                     line=dict(color="navy", width=0.8, dash="dash"),
                     # name=f"Median Energy: {median_energy_at_50pct_auc:.2f} keV"
                 )
+              
                 fig.add_annotation(x=median_energy_at_50pct_auc, 
                                 y=median_height / 2, 
                                 text=f"E<sub>η</sub> = {median_energy_at_50pct_auc:.2f} keV", 
                                 showarrow=False, 
-                                font=dict(color="navy", size=14))
+                                font=dict(color="navy", size=14)
+                )
             
             if show_mean_energy:
                 # Calculate the mean energy using your function
@@ -394,8 +398,9 @@ if __name__ == "__main__":
                                 y=mean_height / 8, 
                                 text=f"E<sub>μ</sub> = {mean_energy:.2f} keV", 
                                 showarrow=False, 
-                                font=dict(color="blueviolet", size=14))
-            if show_peak_energy:
+                                font=dict(color="blueviolet", size=14)
+                )
+            if show_peak_energy
                 # Calculate the peak energy using your function
                 peak_energy = calculate_peak_energy(energy_valid, energy_flux_normalised_filtered)
                 
@@ -418,7 +423,8 @@ if __name__ == "__main__":
                                 y=peak_height * 1.1, 
                                 text=f"E<sub>peak</sub> = {peak_energy:.2f} keV", 
                                 showarrow=False, 
-                                font=dict(color="green", size=14))
+                                font=dict(color="green", size=14)
+                )
 
             # # Add vertical line for effective energy
             # if show_effective_energy:
@@ -440,7 +446,8 @@ if __name__ == "__main__":
                                         y=relative_attenuation_filter_1, 
                                         mode='lines', 
                                         line=dict(color=colour_material_1, width=1.5, dash="dash"), 
-                                        name="Transmission Filter 1"))
+                                        name="Transmission Filter 1")
+                             )
 
             if show_attenuation_plot_filter_1:
                 fig.add_trace(go.Scatter(x=energy_valid, 
@@ -448,14 +455,16 @@ if __name__ == "__main__":
                                         mode='lines', 
                                         line=dict(color=colour_material_1a, width=2, dash="dot"), 
                                         name="Attenuation Filter 1", 
-                                        yaxis="y2"))
+                                        yaxis="y2")
+                             )
 
             if show_transmission_plot_filter_2:
                 fig.add_trace(go.Scatter(x=energy_valid, 
                                         y=relative_attenuation_filter_2, 
                                         mode='lines', 
                                         line=dict(color=colour_material_2, width=1.5, dash="dash"), 
-                                        name="Transmission Filter 2"))
+                                        name="Transmission Filter 2")
+                             )
 
             if show_attenuation_plot_filter_2:
                 fig.add_trace(go.Scatter(x=energy_valid, 
@@ -463,14 +472,16 @@ if __name__ == "__main__":
                                         mode='lines', 
                                         line=dict(color=colour_material_2a, width=2, dash="dot"), 
                                         name="Attenuation Filter 2", 
-                                        yaxis="y2"))
+                                        yaxis="y2")
+                             )
 
             if show_transmission_plot_filter_3:
                 fig.add_trace(go.Scatter(x=energy_valid, 
                                         y=relative_attenuation_filter_3, 
                                         mode='lines', 
                                         line=dict(color=colour_material_3, width=2, dash="dash"), 
-                                        name="Transmission Filter 3"))
+                                        name="Transmission Filter 3")
+                             )
 
             if show_attenuation_plot_filter_3:
                 fig.add_trace(go.Scatter(x=energy_valid, 
@@ -478,7 +489,8 @@ if __name__ == "__main__":
                                         mode='lines', 
                                         line=dict(color=colour_material_3a, width=1.5, dash="dot"), 
                                         name="Attenuation Filter 3", 
-                                        yaxis="y2"))
+                                        yaxis="y2")
+                             )
 
             # Annotate AUC percentage
             fig.add_annotation(
@@ -503,7 +515,7 @@ if __name__ == "__main__":
                     showgrid=False
                 ),
                 xaxis=dict(range=[0, tube_voltage_max], dtick=10,showgrid=False),
-                yaxis=dict(range=[0, y_axis_max], dtick=0.1,showgrid=False),
+                yaxis=dict(range=[0, y_axis_max], dtick=0.05,showgrid=False),
                 showlegend=False,
                 template=selected_style,
                 width=1300,   # Set the width of the figure, also limited by col width
