@@ -203,14 +203,17 @@ if __name__ == "__main__":
         # Checkbox for showing charactersistic X-ray peaks
         show_characteristic_xray_peaks = st.checkbox("Show Characteristic X-ray Peaks", value=False)
 
-        # Checkbox for showing the median beam energy
-        show_median_energy = st.checkbox("Show Median Energy Eη", value=False)
+        # # Checkbox for showing the median beam energy
+        # show_median_energy = st.checkbox("Show Median Energy Eη", value=False)
+
+        st.markdown(r"**Show Median Energy:** $E_\eta$")
+        show_median_energy = st.checkbox("Median Energy", value=False)
 
         # Checkbox for showing the mean beam energy
-        show_mean_energy = st.checkbox("Show Mean Energy Eμ ", value=False)
+        show_mean_energy = st.checkbox("Show Mean Energy Eμ", value=False)
 
         # Checkbox for showing the mean beam energy
-        show_peak_energy = st.checkbox("Show Peak Energy Epeak", value=False)
+        show_peak_energy = st.checkbox("Show Peak Energy Eₚₑₐₖ", value=False)
 
         # # Checkbox for showing the effective beam energy
         # show_effective_energy = st.checkbox("Show Effective Beam Energy (WIP)", value=False)
@@ -547,7 +550,7 @@ if __name__ == "__main__":
                 showlegend=False,
                 template=selected_style,
                 width=1300,   # Set the width of the figure, also limited by col width
-                height=800,    # Set the height of the figure
+                height=750,    # Set the height of the figure
                 uirevision='constant', # Don't reset axes on every user input change
             )
 
