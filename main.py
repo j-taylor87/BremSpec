@@ -203,17 +203,30 @@ if __name__ == "__main__":
         # Checkbox for showing charactersistic X-ray peaks
         show_characteristic_xray_peaks = st.checkbox("Show Characteristic X-ray Peaks", value=False)
 
+        # Create two columns: one for all checkboxes and one for the corresponding labels that need markdown to display subscripts
+        col1a, col1b = st.columns([1, 8])  # Adjust column width ratio as needed
+        
+        with col1a:
+            # All checkboxes in the first column
+            show_median_energy = st.checkbox("", value=False, key="median_energy")
+            show_mean_energy = st.checkbox("", value=False, key="mean_energy")
+            show_peak_energy = st.checkbox("", value=False, key="peak_energy")
+        
+        with col1b:
+            # All labels in the second column
+            st.markdown(r"Show Median Energy: $E_\eta$")
+            st.markdown(r"Show Mean Energy: $E_\mu$")
+            st.markdown(r"Show Peak Energy: $E_{\mathrm{peak}}$")
+  
+
         # # Checkbox for showing the median beam energy
         # show_median_energy = st.checkbox("Show Median Energy Eη", value=False)
 
-        st.markdown(r"**Show Median Energy:** $E_\eta$")
-        show_median_energy = st.checkbox("Median Energy", value=False)
+        # # Checkbox for showing the mean beam energy
+        # show_mean_energy = st.checkbox("Show Mean Energy Eμ", value=False)
 
-        # Checkbox for showing the mean beam energy
-        show_mean_energy = st.checkbox("Show Mean Energy Eμ", value=False)
-
-        # Checkbox for showing the mean beam energy
-        show_peak_energy = st.checkbox("Show Peak Energy Eₚₑₐₖ", value=False)
+        # # Checkbox for showing the mean beam energy
+        # show_peak_energy = st.checkbox("Show Peak Energy Eₚₑₐₖ", value=False)
 
         # # Checkbox for showing the effective beam energy
         # show_effective_energy = st.checkbox("Show Effective Beam Energy (WIP)", value=False)
