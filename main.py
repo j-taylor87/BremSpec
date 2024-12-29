@@ -508,6 +508,7 @@ if __name__ == "__main__":
                 template=selected_style,
                 width=1300,   # Set the width of the figure, also limited by col width
                 height=600    # Set the height of the figure
+                uirevision='constant', # Don't reset axes on every user input change
             )
 
             # Add grid if needed
