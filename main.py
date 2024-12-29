@@ -400,7 +400,7 @@ if __name__ == "__main__":
                                 showarrow=False, 
                                 font=dict(color="blueviolet", size=14)
                 )
-            if show_peak_energy
+            if show_peak_energy:
                 # Calculate the peak energy using your function
                 peak_energy = calculate_peak_energy(energy_valid, energy_flux_normalised_filtered)
                 
