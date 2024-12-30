@@ -369,11 +369,15 @@ if __name__ == "__main__":
         ########## Visualise the spectrum ##########
         
         with st.container(border=True):
-            # Create a Plotly figure
-            if 'fig' not in st.session_state:
+            # Use a single figure and persist it in session_state
+            if "fig" not in st.session_state:
                 st.session_state.fig = go.Figure()
         
-            fig = st.session_state.fig  # Use session state to preserve the figure
+            fig = st.session_state.fig  # Reuse the existing figure
+        
+            # Clear existing traces and annotations
+            fig.data = []  # Remove previous traces
+            fig.layout.annotations = []  # Clear annotations while retaining layout settings
 
             # Plot the spectrum with characteristic peaks or without
             fig.add_trace(go.Scatter(x=energy_valid, 
@@ -580,12 +584,12 @@ if __name__ == "__main__":
                     type='log',
                     showgrid=False
                 ),
-                xaxis=dict(range=[0, tube_voltage_max], dtick=10,showgrid=False),
-                yaxis=dict(range=[0, y_axis_max], dtick=0.05,showgrid=False),
+                xaxis=dict(range=[0, tube_voltage_max], dtick=10, showgrid=False),
+                yaxis=dict(range=[0, y_axis_max], dtick=0.1, showgrid=False),
                 showlegend=False,
                 template=selected_style,
                 width=1300,   # Set the width of the figure, also limited by col width
-                height=750,    # Set the height of the figure
+                height=720,    # Set the height of the figure
                 uirevision='constant', # Don't reset axes on every user input change
             )
 
