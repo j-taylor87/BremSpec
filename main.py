@@ -370,7 +370,10 @@ if __name__ == "__main__":
         
         with st.container(border=True):
             # Create a Plotly figure
-            fig = go.Figure()
+            if 'fig' not in st.session_state:
+                st.session_state.fig = go.Figure()
+        
+            fig = st.session_state.fig  # Use session state to preserve the figure
 
             # Plot the spectrum with characteristic peaks or without
             fig.add_trace(go.Scatter(x=energy_valid, 
@@ -558,7 +561,7 @@ if __name__ == "__main__":
             # Annotate AUC percentage
             fig.add_annotation(
                 x=0.95, 
-                y=1.12, 
+                y=1.05, 
                 text=f"AUC = {auc_percentage:.2f}%", 
                 showarrow=False, 
                 xref="paper", 
