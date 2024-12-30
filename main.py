@@ -598,7 +598,7 @@ if __name__ == "__main__":
                 ),
                 yaxis=dict(
                   title="Relative Energy Flux Φ",
-                  range=st.session_state.last_y_range
+                  range=st.session_state.last_y_range,
                   # range=[0, y_axis_max],
                   dtick=0.1, 
                   showgrid=False
