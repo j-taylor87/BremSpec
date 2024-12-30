@@ -575,8 +575,20 @@ if __name__ == "__main__":
 
             # Update layout
             fig.update_layout(
-                xaxis_title="Photon Energy E (keV)",
-                yaxis_title="Relative Energy Flux Φ",
+                xaxis=dict(
+                  title="Photon Energy E (keV)",
+                  range=fig.layout.xaxis.range,
+                  # range=[0, tube_voltage_max],
+                  dtick=10, 
+                  showgrid=False,
+                ),
+                yaxis=dict(
+                  title="Relative Energy Flux Φ",
+                  range=fig.layout.yaxis.range,
+                  # range=[0, y_axis_max], 
+                  dtick=0.1, 
+                  showgrid=False
+                ),
                 yaxis2=dict(
                     title="Mass Attenuation Coefficient μ (cm²/g)",
                     overlaying='y',
@@ -584,8 +596,6 @@ if __name__ == "__main__":
                     type='log',
                     showgrid=False
                 ),
-                xaxis=dict(range=[0, tube_voltage_max], dtick=10, showgrid=False),
-                yaxis=dict(range=[0, y_axis_max], dtick=0.1, showgrid=False),
                 showlegend=False,
                 template=selected_style,
                 width=1300,   # Set the width of the figure, also limited by col width
