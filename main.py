@@ -203,6 +203,18 @@ if __name__ == "__main__":
         # Checkbox for showing charactersistic X-ray peaks
         show_characteristic_xray_peaks = st.checkbox("Show Characteristic X-ray Peaks", value=False)
 
+        # Checkbox for showing the median beam energy
+        show_median_energy = st.checkbox("Show Median Energy Eη", value=False)
+
+        # Checkbox for showing the mean beam energy
+        show_mean_energy = st.checkbox("Show Mean Energy Eμ", value=False)
+
+        # Checkbox for showing the mean beam energy
+        show_peak_energy = st.checkbox("Show Peak Energy Eₚₑₐₖ", value=False)
+
+        # Checkbox for showing the effective beam energy
+        show_effective_energy = st.checkbox("Show Effective Beam Energy (WIP)", value=False)
+
         # Create two columns: one for all checkboxes and one for the corresponding labels that need markdown to display subscripts
         # col1a, col1b = st.columns([1, 15])
         
@@ -218,37 +230,24 @@ if __name__ == "__main__":
         #     st.markdown(r"Show Mean Energy $E_\mu$")
         #     st.markdown(r"Show Peak Energy $E_{\mathrm{peak}}$")
 
-        # Create separate columns for each checkbox-label pair
-        col1a, col1b = st.columns([1, 15])
-        with col1a:
-            show_median_energy = st.checkbox("", value=False, key="median_energy")
-        with col1b:
-            st.markdown(r"Show Median Energy $E_\eta$")
+        # # Create separate columns for each checkbox-label pair
+        # col1a, col1b = st.columns([1, 15])
+        # with col1a:
+        #     show_median_energy = st.checkbox("", value=False, key="median_energy")
+        # with col1b:
+        #     st.markdown(r"Show Median Energy $E_\eta$")
         
-        col2a, col2b = st.columns([1, 15])
-        with col2a:
-            show_mean_energy = st.checkbox("", value=False, key="mean_energy")
-        with col2b:
-            st.markdown(r"Show Mean Energy $E_\mu$")
+        # col2a, col2b = st.columns([1, 15])
+        # with col2a:
+        #     show_mean_energy = st.checkbox("", value=False, key="mean_energy")
+        # with col2b:
+        #     st.markdown(r"Show Mean Energy $E_\mu$")
         
-        col3a, col3b = st.columns([1, 15])
-        with col3a:
-            show_peak_energy = st.checkbox("", value=False, key="peak_energy")
-        with col3b:
-            st.markdown(r"Show Peak Energy $E_{\mathrm{peak}}$")
- 
-
-        # # Checkbox for showing the median beam energy
-        # show_median_energy = st.checkbox("Show Median Energy Eη", value=False)
-
-        # # Checkbox for showing the mean beam energy
-        # show_mean_energy = st.checkbox("Show Mean Energy Eμ", value=False)
-
-        # # Checkbox for showing the mean beam energy
-        # show_peak_energy = st.checkbox("Show Peak Energy Eₚₑₐₖ", value=False)
-
-        # # Checkbox for showing the effective beam energy
-        # show_effective_energy = st.checkbox("Show Effective Beam Energy (WIP)", value=False)
+        # col3a, col3b = st.columns([1, 15])
+        # with col3a:
+        #     show_peak_energy = st.checkbox("", value=False, key="peak_energy")
+        # with col3b:
+        #     st.markdown(r"Show Peak Energy $E_{\mathrm{peak}}$")
 
     with col3: # col3 before col2 to define the show grid button    
                 
@@ -366,24 +365,10 @@ if __name__ == "__main__":
         auc_percentage = calculate_auc_percentage(energy_flux_normalised_filtered, energy_valid, 0, tube_voltage, tube_voltage_max)
 
         ###############################################################################################################################################################
-        ########## Visualise the spectrum ##########
-        
+        ########## Visualise the spectrum ########## 
         with st.container(border=True):
-            # Use a single figure and persist it in session_state
-            if "fig" not in st.session_state:
-                st.session_state.fig = go.Figure()
-
-                # Initial hardcoded ranges for x and y axes
-                st.session_state.fig.update_layout(
-                    xaxis=dict(range=[0, tube_voltage_max]),
-                    yaxis=dict(range=[0, 1])  # Set your desired initial range here
-                )
-        
-            fig = st.session_state.fig  # Reuse the existing figure
-        
-            # Clear existing traces and annotations
-            fig.data = []  # Remove previous traces
-            fig.layout.annotations = []  # Clear annotations while retaining layout settings
+            # Create plotly figure
+            fig = go.Figure()
 
             # Plot the spectrum with characteristic peaks or without
             fig.add_trace(go.Scatter(x=energy_valid, 
@@ -598,8 +583,7 @@ if __name__ == "__main__":
                 ),
                 yaxis=dict(
                   title="Relative Energy Flux Φ",
-                  range=st.session_state.last_y_range,
-                  # range=[0, y_axis_max],
+                  range=[0, y_axis_max],
                   dtick=0.1, 
                   showgrid=False
                 ),
