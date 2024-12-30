@@ -44,10 +44,10 @@ def add_characteristic_peaks(target_material, energy, energy_flux_normalised_fil
                     # Manually position each annotation
         annotations = [
             # {"energy": energy_char[4], "peak": flux_peaks[4], "text": f"{energy_char[4]} keV", "xytext": (-20, 20)}, # L2M2
-            {"energy": energy_char[1], "peak": flux_peaks[1], "text": f"<b>KL3:</b>: {energy_char[1]} keV", "xytext": (-20, -40)}, # KL3
-            {"energy": energy_char[2], "peak": flux_peaks[2], "text": f"<b>KM3:</b>: {energy_char[2]} keV", "xytext": (40, -30)}, # KM3
-            {"energy": energy_char[3], "peak": flux_peaks[3], "text": f"<b>KN3:</b>: {energy_char[3]} keV", "xytext": (45, -10)},  # KN3
-            {"energy": energy_char[0], "peak": flux_peaks[0], "text": f"<b>KL2:</b>: {energy_char[0]} keV", "xytext": (-45, -10)}, # KL2
+            {"energy": energy_char[1], "peak": flux_peaks[1], "text": f"<b>KL3:</b> {energy_char[1]} keV", "xytext": (-20, -40)}, # KL3
+            {"energy": energy_char[2], "peak": flux_peaks[2], "text": f"<b>KM3:</b> {energy_char[2]} keV", "xytext": (40, -30)}, # KM3
+            {"energy": energy_char[3], "peak": flux_peaks[3], "text": f"<b>KN3:</b> {energy_char[3]} keV", "xytext": (45, -10)},  # KN3
+            {"energy": energy_char[0], "peak": flux_peaks[0], "text": f"<b>KL2:</b> {energy_char[0]} keV", "xytext": (-45, -10)}, # KL2
         ]
 
     elif target_material == "Rh (Z=45)":
