@@ -577,14 +577,14 @@ if __name__ == "__main__":
             fig.update_layout(
                 xaxis=dict(
                   title="Photon Energy E (keV)",
-                  range=fig.layout.xaxis.range,
+                  # range=fig.layout.xaxis.range,
                   # range=[0, tube_voltage_max],
                   dtick=10, 
                   showgrid=False,
                 ),
                 yaxis=dict(
                   title="Relative Energy Flux Φ",
-                  range=fig.layout.yaxis.range,
+                  # range=fig.layout.yaxis.range,
                   # range=[0, y_axis_max], 
                   dtick=0.1, 
                   showgrid=False
