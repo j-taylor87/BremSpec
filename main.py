@@ -372,6 +372,12 @@ if __name__ == "__main__":
             # Use a single figure and persist it in session_state
             if "fig" not in st.session_state:
                 st.session_state.fig = go.Figure()
+
+              # Initial hardcoded ranges for x and y axes
+              st.session_state.fig.update_layout(
+                  xaxis=dict(range=[0, tube_voltage_max]),
+                  yaxis=dict(range=[0, 1])  # Set your desired initial range here
+              )
         
             fig = st.session_state.fig  # Reuse the existing figure
         
@@ -573,19 +579,27 @@ if __name__ == "__main__":
                 font=dict(color=selected_colour, size=20, family="sans-serif")
             )
 
+             # Check if user changed the y-axis range (e.g., via zoom or autoscale)
+            if "last_y_range" not in st.session_state:
+                st.session_state.last_y_range = fig.layout.yaxis.range  # Store the initial hardcoded range
+        
+            # Preserve user changes to the y-axis range
+            if fig.layout.yaxis.range != st.session_state.last_y_range:
+                st.session_state.last_y_range = fig.layout.yaxis.range  # Update stored range if user changed it
+          
+
             # Update layout
             fig.update_layout(
                 xaxis=dict(
                   title="Photon Energy E (keV)",
-                  # range=fig.layout.xaxis.range,
-                  # range=[0, tube_voltage_max],
+                  range=[0, tube_voltage_max],
                   dtick=10, 
                   showgrid=False,
                 ),
                 yaxis=dict(
                   title="Relative Energy Flux Φ",
-                  # range=fig.layout.yaxis.range,
-                  # range=[0, y_axis_max], 
+                  range=st.session_state.last_y_range
+                  # range=[0, y_axis_max],
                   dtick=0.1, 
                   showgrid=False
                 ),
