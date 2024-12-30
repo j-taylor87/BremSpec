@@ -204,7 +204,7 @@ if __name__ == "__main__":
         show_characteristic_xray_peaks = st.checkbox("Show Characteristic X-ray Peaks", value=False)
 
         # Create two columns: one for all checkboxes and one for the corresponding labels that need markdown to display subscripts
-        col1a, col1b = st.columns([0.5, 8])
+        col1a, col1b = st.columns([1, 8])
         
         with col1a:
             # All checkboxes in the first column
