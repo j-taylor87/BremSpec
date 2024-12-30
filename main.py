@@ -373,11 +373,11 @@ if __name__ == "__main__":
             if "fig" not in st.session_state:
                 st.session_state.fig = go.Figure()
 
-              # Initial hardcoded ranges for x and y axes
-              st.session_state.fig.update_layout(
-                  xaxis=dict(range=[0, tube_voltage_max]),
-                  yaxis=dict(range=[0, 1])  # Set your desired initial range here
-              )
+                # Initial hardcoded ranges for x and y axes
+                st.session_state.fig.update_layout(
+                    xaxis=dict(range=[0, tube_voltage_max]),
+                    yaxis=dict(range=[0, 1])  # Set your desired initial range here
+                )
         
             fig = st.session_state.fig  # Reuse the existing figure
         
