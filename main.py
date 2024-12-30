@@ -210,10 +210,10 @@ if __name__ == "__main__":
         show_mean_energy = st.checkbox("Show Mean Energy Eμ", value=False)
 
         # Checkbox for showing the mean beam energy
-        show_peak_energy = st.checkbox("Show Peak Energy Eₚₑₐₖ", value=False)
+        show_peak_energy = st.checkbox("Show Peak Energy Ep", value=False)
 
-        # Checkbox for showing the effective beam energy
-        show_effective_energy = st.checkbox("Show Effective Beam Energy (WIP)", value=False)
+        # # Checkbox for showing the effective beam energy
+        # show_effective_energy = st.checkbox("Show Effective Beam Energy (WIP)", value=False)
 
         # Create two columns: one for all checkboxes and one for the corresponding labels that need markdown to display subscripts
         # col1a, col1b = st.columns([1, 15])
@@ -482,7 +482,7 @@ if __name__ == "__main__":
                 # Add annotation to show the peak energy value on the plot
                 fig.add_annotation(x=peak_energy, 
                                 y=peak_height * 1.1, 
-                                text=f"E<sub>peak</sub> = {peak_energy:.2f} keV", 
+                                text=f"E<sub>p</sub> = {peak_energy:.2f} keV", 
                                 showarrow=False, 
                                 font=dict(color="green", size=14)
                 )
