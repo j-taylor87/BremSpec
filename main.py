@@ -204,7 +204,7 @@ if __name__ == "__main__":
         show_characteristic_xray_peaks = st.checkbox("Show Characteristic X-ray Peaks", value=False)
 
         # Create two columns: one for all checkboxes and one for the corresponding labels that need markdown to display subscripts
-        col1a, col1b = st.columns([1, 8])
+        col1a, col1b = st.columns([1, 15])
         
         with col1a:
             # All checkboxes in the first column
@@ -214,9 +214,13 @@ if __name__ == "__main__":
         
         with col1b:
             # All labels in the second column
-            st.markdown(r"Show Median Energy $E_\eta$")
-            st.markdown(r"Show Mean Energy $E_\mu$")
-            st.markdown(r"Show Peak Energy $E_{\mathrm{peak}}$")
+            # st.markdown(r"Show Median Energy $E_\eta$")
+            # st.markdown(r"Show Mean Energy $E_\mu$")
+            # st.markdown(r"Show Peak Energy $E_{\mathrm{peak}}$")
+
+            st.markdown(r"<div style='line-height:1.9'><b>Show Median Energy:</b> $E_\eta$</div>", unsafe_allow_html=True)
+            st.markdown(r"<div style='line-height:1.9'><b>Show Mean Energy:</b> $E_\mu$</div>", unsafe_allow_html=True)
+            st.markdown(r"<div style='line-height:1.9'><b>Show Peak Energy:</b> $E_{\mathrm{peak}}$</div>", unsafe_allow_html=True)
   
 
         # # Checkbox for showing the median beam energy
