@@ -561,7 +561,7 @@ if __name__ == "__main__":
                 showarrow=False, 
                 xref="paper", 
                 yref="paper", 
-                font=dict(color=selected_colour, size=20, family="sans-serif")
+                font=dict(color=selected_colour, size=30, family="sans-serif")
             )
 
              # Check if user changed the y-axis range (e.g., via zoom or autoscale)
@@ -580,19 +580,22 @@ if __name__ == "__main__":
                   range=[0, tube_voltage_max],
                   dtick=10, 
                   showgrid=False,
+                  size=20,
                 ),
                 yaxis=dict(
                   title="Relative Energy Flux Φ",
                   range=[0, y_axis_max],
                   dtick=0.1, 
-                  showgrid=False
+                  showgrid=False,
+                  size=20,
                 ),
                 yaxis2=dict(
                     title="Mass Attenuation Coefficient μ (cm²/g)",
                     overlaying='y',
                     side='right',
                     type='log',
-                    showgrid=False
+                    showgrid=False,
+                    size=20,
                 ),
                 showlegend=False,
                 template=selected_style,
