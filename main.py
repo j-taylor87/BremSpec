@@ -580,14 +580,14 @@ if __name__ == "__main__":
                   range=[0, tube_voltage_max],
                   dtick=10, 
                   showgrid=False,
-                  size=20,
+                  tickfont=dict(size=18),        # Tick label font size
                 ),
                 yaxis=dict(
                   title="Relative Energy Flux Ψ",
                   range=[0, y_axis_max],
                   dtick=0.1, 
                   showgrid=False,
-                  size=20,
+                  tickfont=dict(size=18),
                 ),
                 yaxis2=dict(
                     title="Mass Attenuation Coefficient μ (cm²/g)",
@@ -595,7 +595,7 @@ if __name__ == "__main__":
                     side='right',
                     type='log',
                     showgrid=False,
-                    size=20,
+                    tickfont=dict(size=18),
                 ),
                 showlegend=False,
                 template=selected_style,
