@@ -580,6 +580,7 @@ if __name__ == "__main__":
                   range=[0, tube_voltage_max],
                   dtick=10, 
                   showgrid=False,
+                  title_font=dict(size=20),      # Axis title font size
                   tickfont=dict(size=18),        # Tick label font size
                 ),
                 yaxis=dict(
@@ -587,6 +588,7 @@ if __name__ == "__main__":
                   range=[0, y_axis_max],
                   dtick=0.1, 
                   showgrid=False,
+                  title_font=dict(size=20),
                   tickfont=dict(size=18),
                 ),
                 yaxis2=dict(
@@ -595,6 +597,7 @@ if __name__ == "__main__":
                     side='right',
                     type='log',
                     showgrid=False,
+                  title_font=dict(size=20),
                     tickfont=dict(size=18),
                 ),
                 showlegend=False,
