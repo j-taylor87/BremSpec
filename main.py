@@ -583,7 +583,7 @@ if __name__ == "__main__":
                   size=20,
                 ),
                 yaxis=dict(
-                  title="Relative Energy Flux Φ",
+                  title="Relative Energy Flux Ψ",
                   range=[0, y_axis_max],
                   dtick=0.1, 
                   showgrid=False,
