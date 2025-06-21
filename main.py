@@ -1,38 +1,42 @@
+# main.py
+# Project: BremSpec
+# Author: James Taylor
+# Date: October 2023
+
 import streamlit as st
-import os
+# print("Streamlit version:", st.__version__)
 import numpy as np
-# import matplotlib.pyplot as plt
-# from matplotlib.font_manager import FontProperties
-# plt.rcParams["font.sans-serif"] = "Tahoma"
 import plotly.graph_objects as go
+import matplotlib.colors as mcolors
 
 # Custom functions
-from get_modality_settings import get_modality_settings
-from select_attenuation import select_attenuation
-from kramers_law import kramers_law
-from relative_attenuation_mass_coeff import relative_attenuation_mass_coeff
-from calculate_auc_percentage import calculate_auc_percentage
-from calculate_median_energy import calculate_median_energy
-from calculate_mean_energy import calculate_mean_energy
-from calculate_peak_energy import calculate_peak_energy
-# from calculate_effective_energy_and_hvl import calculate_effective_energy_and_hvl
-from add_characteristic_peaks import add_characteristic_peaks
+from utils.get_modality_settings import get_modality_settings
+from utils.select_attenuation_and_load_data import select_attenuation
+from utils.calc_utils import (
+    add_characteristic_peaks,
+    calculate_auc_percentage,
+    calculate_effective_energy_and_hvl,
+    calculate_mean_energy,
+    calculate_median_energy,
+    calculate_peak_energy,
+    kramers_law,
+    relative_attenuation_mass_coeff
+)
 
 # Set data directory
-# data_dir = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-# print("Current Working Directory:", os.getcwd())
-data_dir = "./Data" # Works with GitHub
+data_dir = "./data" # Works with GitHub
 
 # Set streamlit page to wide mode
 st.set_page_config(layout="wide", 
                    page_icon='☢️',
+                   page_title="BremSpec",
                 #    menu_items={
                 #         'Get Help': '',
                 #         'Report a bug': "",
                 #         'About': "!"}
 )
 
-# Current (Oct 24) CSS workaround for edited whitespace of app
+# Current (2024) CSS workaround for edited whitespace of app
 st.markdown("""
     <style>
            /* Remove blank space at top and bottom */ 
@@ -62,14 +66,14 @@ st.markdown("""
 
 # Main function
 if __name__ == "__main__":
+
     st.title("BremSpec")
-    st.write("Bremsstrahlung X-ray Spectrum Visualiser") #`Decelerate and Illuminate :P`
+    st.markdown("<h4 style='color: #666;'>Bremsstrahlung X-ray Spectrum Visualiser</h2>", unsafe_allow_html=True) #`Decelerate and Illuminate :P`
     
     # Create columns and specify widths
     col1, col2, col3 = st.columns([0.7,2.2,0.6])
 
     # List of available plot styles
-    # plot_styles = ["classic","bmh","ggplot","Solarize_Light2","dark_background"]
     plot_styles = ['ggplot2', 
                    'seaborn', 
                    'simple_white', 
@@ -79,10 +83,11 @@ if __name__ == "__main__":
                    'presentation'
     ]
     
+    modalities = ["General X-ray", "Mammography (WIP)", "Fluoroscopy (WIP)","CT (WIP)"]
 
     with col1: # elements in col1will display in the left column
         #st.subheader("Input Parameters")
-        with st.popover("More Info"):
+        with st.popover("Instructions"):
             st.markdown(""" - Select an X-ray imaging modality, technique factors (kV, mA, ms), and filter/target materials to see how these factors affect the 
                     shape of the Bremsstrahlung X-ray spectrum.
                     \n - The available energies along the x-axis will depend on the selected modality, and the x-axis can be set to scale with kV.
@@ -91,12 +96,15 @@ if __name__ == "__main__":
                     \n - The area under the curve (AUC), representing the normalised total beam intensity across all available 
                     energies, is displayed in the top-right corner of the plot. This is a relative percentage of the unfiltered beam at maximum technique factors of the selected modality, with a tungsten target. 
                     If scaling x-axis with selected kV is selected, then the AUC calculation will take this as the maximum kV.
-                    \n - Median, mean, and peak beam energy can be displayed as vertical lines on the graph. Effective energy and HVL are a WIP.
+                    \n - Effective beam energy can be displayed as a vertical line on the graph. HVL is also displayed, which is based of Material 1 attenuation.
+                    \n - Median, mean, and peak beam energy can also be displayed as vertical lines on the graph for comparison.
                     \n - The characteristic X-rays of the anode target material can be displayed.
-                    \n - Attenuation and tranmission plots can be viewed for the different filter materials. This is especially useful for visualising absorption edges.""")
+                    \n - Attenuation and tranmission plots can be viewed for the different filter materials. This is especially useful for visualising absorption edges.
+                    \n - Attenuation and characteristic X-ray data obtained from NIST (2004) https://www.nist.gov/pml/x-ray-mass-attenuation-coefficients"""
+            )
         
         # User input for modality
-        modality = st.selectbox("Modality", ["General X-ray", "Mammography (WIP)", "Fluoroscopy (WIP)","CT (WIP)"])  # Add more modalities as needed
+        modality = st.selectbox("Modality", modalities)  # Add more modalities as needed
 
         # Get settings for the selected modality
         settings = get_modality_settings(modality)
@@ -150,9 +158,6 @@ if __name__ == "__main__":
                 
             elif modality == "Mammography (WIP)":
                 
-                # st.session_state.current_time_product_old = 120.0
-                # st.session_state.tube_voltage_old = 26.0
-                
                 # Calculate the new current-time product
                 current_time_product = st.session_state.current_time_product_old*(st.session_state.tube_voltage_old / tube_voltage) ** 2.0
                 current_time_product_display = st.write("Current-Time Product (mAs): ", round(current_time_product,0))
@@ -162,9 +167,6 @@ if __name__ == "__main__":
                 st.session_state.current_time_product_old = current_time_product
 
             else: # e.g. General X-ray
-
-                # st.session_state.current_time_product_old = 120.0
-                # st.session_state.tube_voltage_old = 26.0
 
                 # Calculate the new current-time product
                 current_time_product = st.session_state.current_time_product_old*(st.session_state.tube_voltage_old / tube_voltage) ** 2.0
@@ -203,51 +205,17 @@ if __name__ == "__main__":
         # Checkbox for showing charactersistic X-ray peaks
         show_characteristic_xray_peaks = st.checkbox("Show Characteristic X-ray Peaks", value=False)
 
+        # Checkbox for showing the effective beam energy
+        show_effective_energy = st.checkbox("Effective Energy Eeff and HVL", value=False)
+
         # Checkbox for showing the median beam energy
-        show_median_energy = st.checkbox("Show Median Energy Eη", value=False)
+        show_median_energy = st.checkbox("Median Energy Eη", value=False)
 
         # Checkbox for showing the mean beam energy
-        show_mean_energy = st.checkbox("Show Mean Energy Eμ", value=False)
+        show_mean_energy = st.checkbox("Mean Energy Eμ", value=False)
 
         # Checkbox for showing the mean beam energy
-        show_peak_energy = st.checkbox("Show Peak Energy Ep", value=False)
-
-        # # Checkbox for showing the effective beam energy
-        # show_effective_energy = st.checkbox("Show Effective Beam Energy (WIP)", value=False)
-
-        # Create two columns: one for all checkboxes and one for the corresponding labels that need markdown to display subscripts
-        # col1a, col1b = st.columns([1, 15])
-        
-        # with col1a:
-        #     # All checkboxes in the first column
-        #     show_median_energy = st.checkbox("", value=False, key="median_energy")
-        #     show_mean_energy = st.checkbox("", value=False, key="mean_energy")
-        #     show_peak_energy = st.checkbox("", value=False, key="peak_energy")
-        
-        # with col1b:
-        #     # All labels in the second column
-        #     st.markdown(r"Show Median Energy $E_\eta$")
-        #     st.markdown(r"Show Mean Energy $E_\mu$")
-        #     st.markdown(r"Show Peak Energy $E_{\mathrm{peak}}$")
-
-        # # Create separate columns for each checkbox-label pair
-        # col1a, col1b = st.columns([1, 15])
-        # with col1a:
-        #     show_median_energy = st.checkbox("", value=False, key="median_energy")
-        # with col1b:
-        #     st.markdown(r"Show Median Energy $E_\eta$")
-        
-        # col2a, col2b = st.columns([1, 15])
-        # with col2a:
-        #     show_mean_energy = st.checkbox("", value=False, key="mean_energy")
-        # with col2b:
-        #     st.markdown(r"Show Mean Energy $E_\mu$")
-        
-        # col3a, col3b = st.columns([1, 15])
-        # with col3a:
-        #     show_peak_energy = st.checkbox("", value=False, key="peak_energy")
-        # with col3b:
-        #     st.markdown(r"Show Peak Energy $E_{\mathrm{peak}}$")
+        show_peak_energy = st.checkbox("Peak Energy Ep", value=False)
 
     with col3: # col3 before col2 to define the show grid button    
                 
@@ -275,19 +243,6 @@ if __name__ == "__main__":
                 filter_material_selection_1 = st.selectbox(f"Material 1", filters, index=default_index_1, key=f"filter_material_1")
                 filter_material_selection_2 = st.selectbox(f"Material 2", filters, index=default_index_2, key=f"filter_material_2")
                 filter_material_selection_3 = st.selectbox(f"Material 3", filters, index=default_index_3, key=f"filter_material_3")
-        
-        # with st.container():
-        #     with st.popover("Tranmission/Attenuation Plots"):
-        #         # Checkbox for showing attenuation/transmission plots
-        #         st.text("Material 1")
-        #         show_transmission_plot_filter_1= st.checkbox('Transmission 1')
-        #         show_attenuation_plot_filter_1= st.checkbox('Attenuation 1')
-        #         st.text("Material 2")
-        #         show_transmission_plot_filter_2= st.checkbox('Transmission 2')
-        #         show_attenuation_plot_filter_2= st.checkbox('Attenuation 2')
-        #         st.text("Material 3")
-        #         show_transmission_plot_filter_3= st.checkbox('Transmission 3')
-        #         show_attenuation_plot_filter_3= st.checkbox('Attenuation 3')
 
         with st.container():
             with st.popover("Transmission/Attenuation Plots"):
@@ -304,7 +259,6 @@ if __name__ == "__main__":
                 show_transmission_plot_filter_3 = st.checkbox('Transmission 3')
                 show_attenuation_plot_filter_3 = st.checkbox('Attenuation 3')
 
-  
         # User input for filter materials
         energy_base_array, mass_atten_coeff_1, filter_1_material, filter_1_density, filter_1_thickness = select_attenuation(1,filter_material_selection_1,data_dir,modality,colour_material_1)
         
@@ -349,14 +303,9 @@ if __name__ == "__main__":
             energy_valid, energy_flux_normalised = kramers_law(target_material, energy_base_array, tube_voltage, tube_voltage_max, tube_voltage_min, tube_current, tube_current_max, exposure_time, exposure_time_max)
 
         # Calculate the filtered spectrum
-        mass_atten_coeff_1_valid, relative_attenuation_filter_1 = relative_attenuation_mass_coeff(energy_base_array,filter_1_density,filter_1_thickness,mass_atten_coeff_1,tube_voltage,tube_voltage_min)
-        mass_atten_coeff_2_valid, relative_attenuation_filter_2 = relative_attenuation_mass_coeff(energy_base_array,filter_2_density,filter_2_thickness,mass_atten_coeff_2,tube_voltage,tube_voltage_min)
-        mass_atten_coeff_3_valid, relative_attenuation_filter_3 = relative_attenuation_mass_coeff(energy_base_array,filter_3_density,filter_3_thickness,mass_atten_coeff_3,tube_voltage,tube_voltage_min)
-
-        # print(energy_flux_normalised.shape)
-        # print(relative_attenuation_filter_1.shape)
-        # print(relative_attenuation_filter_2.shape)
-        # print(relative_attenuation_filter_3.shape)
+        mass_atten_coeff_1_valid, relative_attenuation_filter_1 = relative_attenuation_mass_coeff(energy_base_array,filter_1_density,filter_1_thickness,mass_atten_coeff_1,tube_voltage)
+        mass_atten_coeff_2_valid, relative_attenuation_filter_2 = relative_attenuation_mass_coeff(energy_base_array,filter_2_density,filter_2_thickness,mass_atten_coeff_2,tube_voltage)
+        mass_atten_coeff_3_valid, relative_attenuation_filter_3 = relative_attenuation_mass_coeff(energy_base_array,filter_3_density,filter_3_thickness,mass_atten_coeff_3,tube_voltage)
 
         # Calculate the normalised energy flux filtered by all selected filters
         energy_flux_normalised_filtered = energy_flux_normalised * relative_attenuation_filter_1 * relative_attenuation_filter_2 * relative_attenuation_filter_3
@@ -364,9 +313,9 @@ if __name__ == "__main__":
         # Calculate the AUC percentage for the filtered spectrum
         auc_percentage = calculate_auc_percentage(energy_flux_normalised_filtered, energy_valid, 0, tube_voltage, tube_voltage_max)
 
-        ###############################################################################################################################################################
         ########## Visualise the spectrum ########## 
         with st.container(border=True):
+            
             # Create plotly figure
             fig = go.Figure()
 
@@ -399,21 +348,66 @@ if __name__ == "__main__":
                                                 arrowwidth=1.2,
                                                 ax=ann["xytext"][0],
                                                 ay=ann["xytext"][1],
-                                                font=dict(size=12))
+                                                font=dict(size=16))
+
+            
+
+            # Convert the selected_colour to RGBA for the fill, with desired opacity
+            rgb_tuple = mcolors.to_rgb(selected_colour) # Get RGB values (0-1 range)
+            r, g, b = [int(255 * c) for c in rgb_tuple] # Convert to 0-255 range
+            fill_color_rgba = f"rgba({r},{g},{b},0.2)" # Create RGBA string with 0.2 opacity
 
             # Fill underneath the curve
             fig.add_trace(go.Scatter(x=energy_valid, 
                                     y=energy_flux_normalised_filtered, 
-                                    mode='lines', 
+                                    mode='lines',  
                                     fill='tozeroy', 
-                                    line=dict(color=selected_colour, width=1.5), 
+                                    line=dict(color=selected_colour, width=1.5),
+                                    fillcolor=fill_color_rgba,
                                     name="Filled Area")
                          )
+            
+            # Add vertical line for effective energy
+            if show_effective_energy:
+
+                effective_energy, t_hvl = calculate_effective_energy_and_hvl(
+                    energy_valid,                           
+                    energy_flux_normalised_filtered,                           
+                    mass_atten_coeff_1_valid,                 
+                    filter_1_density                                 
+                )
+
+                effective_energy_index = np.where(energy_valid >= effective_energy)[0][0]
+                effective_energy_height = energy_flux_normalised_filtered[effective_energy_index]
+
+                # Add vertical line using add_shape
+                fig.add_shape(
+                    type="line",
+                    x0=effective_energy,
+                    x1=effective_energy,
+                    y0=0,
+                    y1=effective_energy_height,
+                    line=dict(color="blue", width=2, dash="dash"),
+                )
+
+                fig.add_annotation(
+                    x=effective_energy,
+                    y=effective_energy_height * 1.25,  # choose appropriate y for your plot
+                        text=(
+                        f"E<sub>eff</sub> = {effective_energy:.2f} keV"
+                        "<br>"
+                        f"HVL = {t_hvl*10:.2f} mm {filter_1_material}"
+                    ),
+                    showarrow=False,
+                    font=dict(color="blue", size=18)
+                )
 
             # Add vertical line for median energy
             if show_median_energy:
-                # Call calculate_median_energy_and_hvl
-                median_energy_at_50pct_auc = calculate_median_energy(energy_valid, energy_flux_normalised_filtered)
+                median_energy_at_50pct_auc = calculate_median_energy(
+                    energy_valid, 
+                    energy_flux_normalised_filtered
+                )
                 
                 median_index = np.where(energy_valid >= median_energy_at_50pct_auc)[0][0]
                 median_height = energy_flux_normalised_filtered[median_index]
@@ -425,7 +419,7 @@ if __name__ == "__main__":
                     x1=median_energy_at_50pct_auc,
                     y0=0,
                     y1=median_height,
-                    line=dict(color="navy", width=0.8, dash="dash"),
+                    line=dict(color="green", width=2, dash="dash"),
                     # name=f"Median Energy: {median_energy_at_50pct_auc:.2f} keV"
                 )
               
@@ -433,7 +427,7 @@ if __name__ == "__main__":
                                 y=median_height / 2, 
                                 text=f"E<sub>η</sub> = {median_energy_at_50pct_auc:.2f} keV", 
                                 showarrow=False, 
-                                font=dict(color="navy", size=14)
+                                font=dict(color="green", size=16)
                 )
             
             if show_mean_energy:
@@ -451,7 +445,7 @@ if __name__ == "__main__":
                     x1=mean_energy,
                     y0=0,
                     y1=mean_height,
-                    line=dict(color="blueviolet", width=1.5, dash="dot"),
+                    line=dict(color="blueviolet", width=3, dash="dot"),
                 )
 
                 # Add annotation to show the mean energy value on the plot
@@ -459,7 +453,7 @@ if __name__ == "__main__":
                                 y=mean_height / 8, 
                                 text=f"E<sub>μ</sub> = {mean_energy:.2f} keV", 
                                 showarrow=False, 
-                                font=dict(color="blueviolet", size=14)
+                                font=dict(color="blueviolet", size=16)
                 )
             if show_peak_energy:
                 # Calculate the peak energy using your function
@@ -476,30 +470,16 @@ if __name__ == "__main__":
                     x1=peak_energy,
                     y0=0,
                     y1=peak_height,
-                    line=dict(color="green", width=0.8, dash="dashdot"),
+                    line=dict(color="darkorange", width=3, dash="dashdot"),
                 )
 
                 # Add annotation to show the peak energy value on the plot
                 fig.add_annotation(x=peak_energy, 
-                                y=peak_height * 1.1, 
+                                y=peak_height * 1.05, 
                                 text=f"E<sub>p</sub> = {peak_energy:.2f} keV", 
                                 showarrow=False, 
-                                font=dict(color="green", size=14)
+                                font=dict(color="orange", size=16)
                 )
-
-            # # Add vertical line for effective energy
-            # if show_effective_energy:
-                  # Call calculate_effective_energy_and_hvl
-            #     energy_eff = calculate_effective_energy_and_hvl(energy_valid, energy_flux_normalised_filtered, filter_1_thickness)
-        
-            #     fig.add_vline(x=energy_eff, 
-            #                 line=dict(color="darkgreen", width=0.8, dash="dash"), 
-            #                 name=f"Effective Energy: {energy_eff:.2f} keV")
-            #     fig.add_annotation(x=energy_eff, 
-            #                     y=0.5, 
-            #                     text=f"Effective Energy: {energy_eff:.2f} keV", 
-            #                     showarrow=False, 
-            #                     font=dict(color="darkgreen", size=8))
 
             # Add transmission and attenuation plots for filters
             if show_transmission_plot_filter_1:
@@ -563,22 +543,15 @@ if __name__ == "__main__":
                 yref="paper", 
                 font=dict(color=selected_colour, size=30, family="sans-serif")
             )
-
-             # Check if user changed the y-axis range (e.g., via zoom or autoscale)
-            if "last_y_range" not in st.session_state:
-                st.session_state.last_y_range = fig.layout.yaxis.range  # Store the initial hardcoded range
-        
-            # Preserve user changes to the y-axis range
-            if fig.layout.yaxis.range != st.session_state.last_y_range:
-                st.session_state.last_y_range = fig.layout.yaxis.range  # Update stored range if user changed it
           
-
             # Update layout
             fig.update_layout(
                 xaxis=dict(
                   title="Photon Energy E (keV)",
                   range=[0, tube_voltage_max],
                   dtick=10, 
+                  showline=True,           # show axis line
+                  linewidth=3,             # thickness of axis line
                   showgrid=False,
                   title_font=dict(size=20),      # Axis title font size
                   tickfont=dict(size=18),        # Tick label font size
@@ -587,8 +560,10 @@ if __name__ == "__main__":
                   title="Relative Energy Flux Ψ",
                   range=[0, y_axis_max],
                   dtick=0.1, 
+                  showline=True,           # show axis line
+                  linewidth=3,             # thickness of axis line
                   showgrid=False,
-                  title_font=dict(size=20),
+                  title_font=dict(size=22),
                   tickfont=dict(size=18),
                 ),
                 yaxis2=dict(
@@ -597,7 +572,7 @@ if __name__ == "__main__":
                     side='right',
                     type='log',
                     showgrid=False,
-                  title_font=dict(size=20),
+                  title_font=dict(size=22),
                     tickfont=dict(size=18),
                 ),
                 showlegend=False,

@@ -18,7 +18,9 @@ def load_mass_attenuation_data(file_path):
       energies (np.array): Array of energy values.
       mass_atten_coeffs (np.array): Array of mass attenuation coefficients corresponding to the energy values.
     """
-    df = pd.read_csv(file_path, delimiter='\t')
+    df = pd.read_csv(file_path, 
+                     delimiter='\t' # tab spaced csv
+                     )
     print("Interpolating data in file:",file_path)
     df.columns = df.columns.str.strip()  # Remove any leading/trailing whitespace from column names
     energy_keV = df['Energy_MeV'].to_numpy() * 1000  # Convert MeV to keV

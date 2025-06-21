@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import os
 
-@st.fragment
-# @st.cache_data(experimental_allow_widgets=True)
 @st.cache_data
 def load_data(data_dir, file_name):
     """
@@ -14,7 +12,7 @@ def load_data(data_dir, file_name):
     file_name (str): The name of the data file to load.
 
     Returns:
-    np.array: The mass attenuation coefficients.
+    energy_base_array, mass_atten_coeff_cm2_g
     """
     interpolated_data_path = os.path.join(data_dir, file_name)
     df_mass_atten = pd.read_csv(interpolated_data_path)
@@ -86,6 +84,30 @@ def select_attenuation(filter_number, filter_material_selection, data_dir, modal
                                      key=f"filter_{filter_number}_thickness_Be",
                                      label_visibility="collapsed")
         file_name = "interpolated_NIST_mass_attenuation_coeff_Be.csv"
+
+    elif filter_material_selection == "Ca (Z=20)":
+        density = 1.55  # g/cm^3
+        st.markdown(f"<span style='color:{colour};'>Material {filter_number} Thickness (mm) - Ca</span>", unsafe_allow_html=True)
+        filter_thickness = st.slider(f"Material {filter_number} Thickness (mm) - Ca", 
+                                     min_value=0.0, 
+                                     max_value=1.0, 
+                                     step=0.001, 
+                                     value=0.0, 
+                                     key=f"filter_{filter_number}_thickness_Ca",
+                                     label_visibility="collapsed")
+        file_name = "interpolated_NIST_mass_attenuation_coeff_Ca.csv"
+
+    elif filter_material_selection == "CaSO4 (Gypsum) (Zeff~13)":
+        density = 2.96  # g/cm^3
+        st.markdown(f"<span style='color:{colour};'>Material {filter_number} Thickness (mm) - CaSO4</span>", unsafe_allow_html=True)
+        filter_thickness = st.slider(f"Material {filter_number} Thickness (mm) - CaSO4", 
+                                     min_value=0.0, 
+                                     max_value=200.0, 
+                                     step=1.0, 
+                                     value=0.0, 
+                                     key=f"filter_{filter_number}_thickness_CaSO4",
+                                     label_visibility="collapsed")
+        file_name = "interpolated_NIST_mass_attenuation_coeff_CaSO4.csv"
         
     elif filter_material_selection == "Mo (Z=42)":
         density = 10.2  # g/cm^3
@@ -147,10 +169,22 @@ def select_attenuation(filter_number, filter_material_selection, data_dir, modal
                                      label_visibility="collapsed")
         file_name = "interpolated_NIST_mass_attenuation_coeff_Sn.csv"
 
+    elif filter_material_selection == "Pb (Z=82)":
+        density = 11.34  # g/cm^3
+        st.markdown(f"<span style='color:{colour};'>Material {filter_number} Thickness (mm) - Pb</span>", unsafe_allow_html=True)
+        filter_thickness = st.slider(f"Material {filter_number} Thickness (mm) - Pb", 
+                                     min_value=0.0, 
+                                     max_value=20.0, 
+                                     step=0.001, 
+                                     value=0.0, 
+                                     key=f"filter_{filter_number}_thickness_Pb",
+                                     label_visibility="collapsed")
+        file_name = "interpolated_NIST_mass_attenuation_coeff_Pb.csv"
+
     elif filter_material_selection == "PMMA (Zeff~6.56)":
         density = 1.18  # g/cm^3
         st.markdown(f"<span style='color:{colour};'>Material {filter_number} Thickness (mm) - PMMA</span>", unsafe_allow_html=True)
-        filter_thickness = st.slider(f"Material {filter_number}  Thickness (mm) - PMMA", 
+        filter_thickness = st.slider(f"Material {filter_number} Thickness (mm) - PMMA", 
                                      min_value=0.0, 
                                      max_value=300.0, 
                                      step=1.0, 
