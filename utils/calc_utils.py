@@ -1,4 +1,3 @@
-import streamlit as st
 import numpy as np
 from scipy.constants import speed_of_light
 from scipy.interpolate import interp1d
@@ -336,3 +335,52 @@ def relative_attenuation_mass_coeff(energy, density, filter_thickness, mass_atte
     attenuation_relative = np.exp(exponent)  
 
     return mass_atten_coeff_valid, attenuation_relative
+
+def calculate_compton_scatter_spectrum(
+    energy_valid, energy_flux, angle_deg,
+    scatter_mass_atten, scatter_density, scatter_thickness,
+    scatter_energy_base
+):
+    """
+    Calculate the Compton scatter spectrum at a given angle.
+    """
+    angle_rad = np.radians(angle_deg)
+    m_e = 511.0  # keV
+
+    # Mask out zero-energy points (can't scatter from 0 keV!)
+    mask = energy_valid > 0
+    energy_valid_nonzero = energy_valid[mask]
+    energy_flux_nonzero = energy_flux[mask]
+
+    # Compute scattered photon energies (Compton equation)
+    scattered_energy_nonzero = energy_valid_nonzero / (1 + (energy_valid_nonzero / m_e) * (1 - np.cos(angle_rad)))
+
+    # Klein-Nishina weighting, safe division
+    epsilon = scattered_energy_nonzero / energy_valid_nonzero
+    kn_factor = epsilon**2 * (epsilon + (1/epsilon) - np.sin(angle_rad)**2)
+
+    # Build the smoothed scatter spectrum
+    scatter_flux_raw = np.zeros_like(energy_valid_nonzero)
+    for Ei, fi, Eprime, kf in zip(energy_valid_nonzero, energy_flux_nonzero, scattered_energy_nonzero, kn_factor):
+        if Eprime < energy_valid_nonzero[0] or Eprime > energy_valid_nonzero[-1]:
+            continue
+        # Gaussian smoothing kernel, width = 0.5 keV (change if needed)
+        scatter_flux_raw += fi * kf * np.exp(-0.5 * ((energy_valid_nonzero - Eprime) / 0.5)**2)
+
+    # Interpolate attenuation to plotting grid (but only on nonzero energies)
+    if (scatter_mass_atten is not None) and (scatter_energy_base is not None):
+        mass_atten_interp = interp1d(scatter_energy_base, scatter_mass_atten, bounds_error=False, fill_value="extrapolate")
+        scatter_mass_atten_valid = mass_atten_interp(energy_valid_nonzero)
+    else:
+        scatter_mass_atten_valid = scatter_mass_atten
+
+    exponent = -scatter_mass_atten_valid * scatter_thickness / 10 * scatter_density
+    scatter_flux = scatter_flux_raw * np.exp(np.clip(exponent, -100, 100))
+    scatter_flux /= np.max(scatter_flux) if np.max(scatter_flux) > 0 else 1.0
+
+    # Place result back into full grid for plotting (fill zeros at 0 keV)
+    scatter_flux_full = np.zeros_like(energy_valid)
+    scatter_flux_full[mask] = scatter_flux
+
+    return energy_valid, scatter_flux_full
+
