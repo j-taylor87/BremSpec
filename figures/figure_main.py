@@ -83,6 +83,7 @@ def _smooth_for_plot(
 
 
 def build_spectrum_figure(
+    modality,
     *,
     # core data
     energy_valid,
@@ -133,7 +134,6 @@ def build_spectrum_figure(
     plot_energy_override=None,
     plot_flux_override=None,
     peak_annotations=None,
-    is_fluoro=False,
 ):
     fig = go.Figure()
 
@@ -262,10 +262,21 @@ def build_spectrum_figure(
         fig.add_trace(go.Scatter(x=energy_valid, y=mass_atten_coeff_3_valid, mode='lines',
                                  line=dict(color=colour_material_3a, width=1.5, dash="dot"), name="Attenuation Filter 3", yaxis="y2"))
 
+    auc_energy_text = None
+    if modality == "Fluoroscopy":
+        # For fluoroscopy, we show the total energy per second
+        auc_energy_text = f"Total Energy per second = {auc_percentage:.2f}%"
+    elif modality == "CT":
+        # For CT, we show the total energy
+        auc_energy_text = f"Total Energy per rotation = {auc_percentage:.2f}%"
+    else:
+        # For other modalities, we can use a generic message
+        auc_energy_text = f"Total Energy = {auc_percentage:.2f}%"
+
     # AUC annotation (label changes for fluoro)
     fig.add_annotation(
         x=0.95, y=1.05,
-        text=f"{'Total Energy per second' if is_fluoro else 'Total Energy'} = {auc_percentage:.2f}%",
+        text=auc_energy_text,
         showarrow=False, xref="paper", yref="paper",
         font=dict(color=selected_colour, size=25, family="sans-serif")
     )
@@ -332,6 +343,16 @@ def build_spectrum_figure(
     # )
 
     # -------- LAYOUT (make axes persistent) --------
+
+    y_axis_text = None
+    if modality == "Fluoroscopy":
+        y_axis_text = "Relative Energy Flux Rate Ψ/s"
+    elif modality == "CT":
+        y_axis_text = "Relative Energy Flux Ψ/rotation"
+    else:
+        y_axis_text = "Relative Energy Flux Ψ"
+
+
     fig.update_layout(
         xaxis=dict(
             title="Photon Energy E (keV)",
@@ -341,7 +362,7 @@ def build_spectrum_figure(
             # uirevision optional here; fixed ranges will dominate
         ),
         yaxis=dict(
-            title=("Relative Energy Flux Rate Ψ/s" if is_fluoro else "Relative Energy Flux Ψ"),
+            title= y_axis_text,
             range=[0.0, float(y_axis_max)],            # <-- fixed, no autoscale
             showline=True, linewidth=3, showgrid=False,
             title_font=dict(size=22), tickfont=dict(size=18),

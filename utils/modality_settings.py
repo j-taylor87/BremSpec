@@ -32,8 +32,8 @@ def get_modality_settings(modality):
 
             # NEW: Source–Image Distance (cm)
             "sid_cm_min": 80.0,
-            "sid_cm_max": 150.0,
-            "sid_cm_default": 110.0,
+            "sid_cm_max": 200.0,
+            "sid_cm_default": 100.0,
 
             "filters": ["Al (Z=13)", 
                         "Cu (Z=29)",
@@ -132,24 +132,21 @@ def get_modality_settings(modality):
             "tube_current_min": 0.0,
             "tube_current_default": 500.0,
 
-            # Rotation time — keep ms for manual paths (existing code)
-            "exposure_time_max": 2000.0,   # ms
-            "exposure_time_min": 100.0,    # ms (avoid 0)
-            "exposure_time_default": 500.0,# ms
+            "rotation_time_min": 100.0,    
+            "rotation_time_default": 500.0,
+            "rotation_time_max": 1000.0,
 
-            # Optional: seconds for CT auto UI (use if you wire it in)
-            "rotation_time_max_s": 2.0,
-            "rotation_time_min_s": 0.3,
-            "rotation_time_default_s": 0.5,
-
-            # NEW: scanner geometry / technique controls
             "pitch_max": 2.0,
             "pitch_min": 0.5,
             "pitch_default": 1.0,
 
-            "collimation_max_mm": 160.0,    # total collimation (detector width) along table
+            "collimation_max_mm": 160.0,
             "collimation_min_mm": 5.0,
             "collimation_default_mm": 80.0,
+
+            "scan_length_max_mm": 2000.0,
+            "scan_length_min_mm": 100.0,
+            "scan_length_default_mm": 1000.0,
 
             "filters": [
                 "Al (Z=13)",

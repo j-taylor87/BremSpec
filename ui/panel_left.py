@@ -45,6 +45,14 @@ def render_panel_left(modalities: list[str]) -> dict:
         exposure_time_min = settings.get("exposure_time_min", 0.0)
         exposure_time_default = settings.get("exposure_time_default", 0.0)
 
+    rotation_time_min = settings.get("rotation_time_min", settings.get("exposure_time_min", 100.0))
+    rotation_time_max = settings.get("rotation_time_max", 2000.0)
+    rotation_time_default = settings.get("rotation_time_default", settings.get("exposure_time_default", 500.0))
+
+    scan_length_min = settings.get("scan_length_min_mm", 100.0)
+    scan_length_max = settings.get("scan_length_max_mm", 2000.0)
+    scan_length_default = settings.get("scan_length_default_mm", 500.0)
+
     filters = settings.get("filters", [])
     automatic_mode = settings.get("automatic_mode", "")
 
@@ -74,7 +82,8 @@ def render_panel_left(modalities: list[str]) -> dict:
     pulse_width_default = None
     ct_pitch = None
     ct_collimation_mm = None
-
+    rotation_time_ms = None
+    scan_length_mm = None
 
     # -------------------------------
     # Technique entry
@@ -184,20 +193,21 @@ def render_panel_left(modalities: list[str]) -> dict:
             st.session_state.current_time_product_old = current_time_product
 
         elif modality == "CT":
+
             tube_current = 1 / tube_voltage**5.0  # placeholder model
-            exposure_time = st.slider(
-                "Rotation Time (s)",
-                min_value=float(exposure_time_min),
-                max_value=float(exposure_time_max),
-                value=float(exposure_time_default),
-                format="%.2f",
+
+            rotation_time_ms = st.slider(
+                "Rotation Time (ms)",
+                min_value=float(rotation_time_min),
+                max_value=float(rotation_time_max),
+                value=float(rotation_time_default),
+                format="%.0f",
             )
             ct_pitch = st.slider(
                 "Pitch",
                 min_value=settings["pitch_min"], max_value=settings["pitch_max"],
                 value=settings["pitch_default"], step=0.1, key="Pitch",
             )
-
             ct_collimation_mm = st.slider(
                 "Collimation (mm)",
                 min_value=settings["collimation_min_mm"], max_value=settings["collimation_max_mm"],
@@ -205,6 +215,7 @@ def render_panel_left(modalities: list[str]) -> dict:
             )
 
             feed_per_rot = float(ct_pitch) * float(ct_collimation_mm)  # mm per rotation
+
             st.markdown(
                 f"<p style='font-family:{font_family}; font-size:{font_size};'>"
                 f"Table feed / rotation: "
@@ -212,18 +223,27 @@ def render_panel_left(modalities: list[str]) -> dict:
                 f"(pitch × collimation)</p>",
                 unsafe_allow_html=True,
             )
-
             current_time_product = (
                 st.session_state.current_time_product_old
                 * (st.session_state.tube_voltage_old / tube_voltage) ** 2.0
             )
 
-            effective_mas_ct = (float(tube_current) * float(exposure_time)) / float(ct_pitch)
+            effective_mas_ct = (float(tube_current) * (float(rotation_time_ms) / 1000.0)) / float(ct_pitch)
+
             st.markdown(
                 f"<p style='font-family:{font_family}; font-size:{font_size};'>"
                 f"Effective mAs (mA × rotation time / pitch): "
                 f"<span style='color:{number_color};'><b>{effective_mas_ct:.1f}</b></span></p>",
                 unsafe_allow_html=True,
+            )
+
+            scan_length_mm = st.slider(
+                "Scan Length (mm)",
+                min_value=float(scan_length_min),
+                max_value=float(scan_length_max),
+                value=float(scan_length_default),
+                step=1.0,
+                key="scan_length_mm",
             )
 
             st.session_state.tube_voltage_old = tube_voltage
@@ -361,9 +381,9 @@ def render_panel_left(modalities: list[str]) -> dict:
             )
             rotation_time_ms = st.slider(
                 "Rotation Time (ms)",
-                min_value=float(exposure_time_min),
-                max_value=float(exposure_time_max),
-                value=float(exposure_time_default),
+                min_value=float(rotation_time_min),
+                max_value=float(rotation_time_max),
+                value=float(rotation_time_default),
                 format="%.0f",
             )
             ct_pitch = st.slider(
@@ -389,14 +409,24 @@ def render_panel_left(modalities: list[str]) -> dict:
             )
 
             current_time_product = round((tube_current or 0) * (rotation_time_ms or 0) / 1000)
+
             effective_mas_ct = (float(tube_current) * (float(rotation_time_ms) / 1000.0)) / float(ct_pitch)
+
             st.markdown(
                 f"<p style='font-family:{font_family}; font-size:{font_size};'>"
                 f"Effective mAs (mA × rotation time / pitch): "
                 f"<span style='color:{number_color};'><b>{effective_mas_ct:.1f}</b></span></p>",
                 unsafe_allow_html=True,
             )
-            exposure_time = rotation_time_ms  # keep legacy key populated (ms)
+
+            scan_length_mm = st.slider(
+                "Scan Length (mm)",
+                min_value=float(scan_length_min),
+                max_value=float(scan_length_max),
+                value=float(scan_length_default),
+                step=1.0,
+                key="scan_length_mm",
+            )
 
         else:
             st.error("Unsupported modality for manual mode.")
@@ -425,6 +455,7 @@ def render_panel_left(modalities: list[str]) -> dict:
         "settings": settings,
         "filters": filters,
         "mode": mode,
+
         "tube_voltage": int(tube_voltage),
         "tube_voltage_min": int(tube_voltage_min),
         "tube_voltage_max": int(tube_voltage_max),
@@ -433,15 +464,21 @@ def render_panel_left(modalities: list[str]) -> dict:
         "exposure_time": exposure_time,              
         "exposure_time_max": exposure_time_max,
         "current_time_product": float(current_time_product),
+
         "field_area_cm2": float(field_area_cm2) if field_area_cm2 is not None else field_area_default,
         "sid_cm": float(sid_cm) if sid_cm is not None else None,
+
         "pulse_width": float(pulse_width) if pulse_width is not None else None,
         "pulse_width_min": float(pulse_width_min) if pulse_width_min is not None else None,
         "pulse_width_max": float(pulse_width_max) if pulse_width_max is not None else None,
         "pulse_width_default": float(pulse_width_default) if pulse_width_default is not None else None,
         "pulse_rate": int(pulse_rate) if pulse_rate is not None else None,
+
+        "rotation_time_ms": float(rotation_time_ms) if rotation_time_ms is not None else None,
         "ct_pitch": float(ct_pitch) if ct_pitch is not None else None,
         "ct_collimation_mm": float(ct_collimation_mm) if ct_collimation_mm is not None else None,
+        "scan_length_mm": float(scan_length_mm) if scan_length_mm is not None else None,
+
         "show_characteristic_xray_peaks": bool(show_characteristic_xray_peaks),
         "show_effective_energy": bool(show_effective_energy),
         "show_median_energy": bool(show_median_energy),

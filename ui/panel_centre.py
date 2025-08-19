@@ -95,6 +95,17 @@ def render_panel_centre(left: dict, right: dict, plot_styles: list[str]) -> None
     scatter_thickness = right["scatter_thickness"]
     scatter_y_scale = right["scatter_y_scale"]
 
+    # --- ensure CT auto uses mAs_per_rotation from UI (mA × rotation_time_s) ---
+    if mode and left["modality"] == "CT":
+        tube_current_auto_mA   = float(left.get("tube_current") or left["settings"].get("tube_current_default", 0.0))
+        rotation_time_now_ms   = float(left.get("rotation_time_ms") or left["settings"].get("rotation_time_default", 500.0))
+        current_time_product   = tube_current_auto_mA * (rotation_time_now_ms / 1000.0)  # mAs per rotation
+
+        # normalisation reference for auto mode
+        rotation_time_max_ms   = float(left["settings"].get("rotation_time_max", rotation_time_now_ms or 1000.0))
+        tube_current_max_mA    = float(left.get("tube_current_max") or left["settings"].get("tube_current_max", 1.0))
+        current_time_product_max = tube_current_max_mA * (rotation_time_max_ms / 1000.0)
+
     # ---- primary spectrum ----
     if mode:  # Automatic mode
         energy_valid, energy_flux_normalised = kramers_law(
@@ -151,6 +162,36 @@ def render_panel_centre(left: dict, right: dict, plot_styles: list[str]) -> None
         ref_pulse_rate = 30.0                               # normalize to 30 p/s
         energy_flux_normalised_filtered *= (pulse_rate / ref_pulse_rate)
 
+    # --- CT per-rotation scaling: mAs_per_rotation × collimation fraction ---
+    if left["modality"] == "CT":
+        # Collimation fraction (open width relative to scanner max)
+        collimation_mm = float(left.get("ct_collimation_mm") or left["settings"].get("collimation_default_mm", 0.0))
+        collimation_max_mm = float(left["settings"].get("collimation_max_mm", max(collimation_mm, 1.0)))
+        collimation_fraction = (collimation_mm / collimation_max_mm) if collimation_max_mm > 0 else 1.0
+
+        if mode:
+            # We just computed current_time_product above as mA × rotation_time(s)
+            mas_now = float(current_time_product)
+        else:
+            # MANUAL: mAs_now = mA × rotation_time(s)
+            tube_current_now_mA = float(left.get("tube_current") or left["settings"].get("tube_current_default", 0.0))
+            rotation_time_now_ms = float(left.get("rotation_time_ms") or left["settings"].get("rotation_time_default", 500.0))
+            mas_now = tube_current_now_mA * (rotation_time_now_ms / 1000.0)
+
+        # Reference max (for 100% scale): tube_current_max × rotation_time_max(s)
+        tube_current_max_mA = float(
+            left.get("tube_current_max") or left["settings"].get("tube_current_max", 1.0)
+        )
+        rotation_time_max_ms = float(
+            left["settings"].get("rotation_time_max", left.get("rotation_time_ms") or 1000.0)
+        )
+        mas_ref = tube_current_max_mA * (rotation_time_max_ms / 1000.0)
+
+        per_rotation_scale = (mas_now / mas_ref) if mas_ref > 0 else 1.0
+
+        # Final CT scaling used for AUC and display
+        energy_flux_normalised_filtered *= (per_rotation_scale * collimation_fraction)
+
     auc_percentage = calculate_auc_percentage(
         energy_flux_normalised_filtered, energy_valid, 0, tube_voltage, tube_voltage_max
     )
@@ -200,6 +241,7 @@ def render_panel_centre(left: dict, right: dict, plot_styles: list[str]) -> None
 
     # ---- build figure (all visuals handled inside) ----
     fig = build_spectrum_figure(
+        modality=left["modality"],
         energy_valid=energy_valid,
         energy_flux_normalised_filtered=energy_flux_normalised_filtered,
         plot_energy_override=display_energy,
@@ -244,7 +286,6 @@ def render_panel_centre(left: dict, right: dict, plot_styles: list[str]) -> None
         scatter_thickness=scatter_thickness,
         scatter_y_scale=scatter_y_scale,
         apply_axis_ranges=reset_axes,
-        is_fluoro=(left["modality"] == "Fluoroscopy"),   # NEW
     )
 
     # ---- optional: scatter Eeff/HVL annotation (kept in center as in your original) ----
@@ -344,10 +385,61 @@ def render_panel_centre(left: dict, right: dict, plot_styles: list[str]) -> None
 
         modality = left["modality"]
 
+        # if modality == "General X-ray":
+        #     sid_cm = float(left.get("sid_cm") or left["settings"].get("sid_cm_default", 110.0))
+        #     area_cm2 = float(left.get("field_area_cm2") or left["settings"].get("field_area_cm2_default", 400.0))
+        #     area_max_cm2 = float(left["settings"].get("field_area_cm2_max", area_cm2 if area_cm2>0.0 else 1.0))
+
+        #     kap_fig = build_gxr_kap_3d(
+        #         target_material=right["target_material"],
+        #         energy_base_keV=right["energy_base_array"],
+        #         kv_now=left["tube_voltage"],
+        #         kv_min=left["tube_voltage_min"],
+        #         kv_max=left["tube_voltage_max"],
+        #         mas_now= left["current_time_product"],
+        #         mas_max=(left["tube_current_max"] * left["exposure_time_max"]) / 1000.0,
+        #         mass_atten_1=right["mass_atten_coeff_1"], 
+        #         dens_1=right["filter_1_density"], 
+        #         thick_1_mm=right["filter_1_thickness"],
+        #         mass_atten_2=right["mass_atten_coeff_2"], 
+        #         dens_2=right["filter_2_density"], 
+        #         thick_2_mm=right["filter_2_thickness"],
+        #         mass_atten_3=right["mass_atten_coeff_3"], 
+        #         dens_3=right["filter_3_density"], 
+        #         thick_3_mm=right["filter_3_thickness"],
+        #         field_area_cm2=area_cm2,
+        #         field_area_max_cm2=area_max_cm2,
+        #         sid_cm=sid_cm,
+        #     )
+        #     st.plotly_chart(kap_fig, use_container_width=True, key="gxr-kap-3d", config={"displayModeBar": True})
+
         if modality == "General X-ray":
             sid_cm = float(left.get("sid_cm") or left["settings"].get("sid_cm_default", 110.0))
             area_cm2 = float(left.get("field_area_cm2") or left["settings"].get("field_area_cm2_default", 400.0))
-            area_max_cm2 = float(left["settings"].get("field_area_cm2_max", area_cm2 if area_cm2>0.0 else 1.0))
+            area_max_cm2 = float(left["settings"].get("field_area_cm2_max", area_cm2 if area_cm2 > 0.0 else 1.0))
+
+            # NEW: controls for the movable reference plane (inverse-square demo)
+            sid_min = float(left["settings"].get("sid_cm_min", 80.0))
+            sid_max = float(left["settings"].get("sid_cm_max", 150.0))
+
+            col2e,col2f = st.columns([1, 1])
+            with col2e:
+                show_ref = st.checkbox(
+                    "Show reference plane (inverse-square demo)",
+                    value=True,
+                    key="show_ref_plane",
+                )
+            with col2f:
+                # allow 0 cm (source) up to max(SID slider max, current SID)
+                ref_z_cm = st.slider(
+                    "Reference plane z (cm)",
+                    min_value=0.0,
+                    max_value=max(sid_max, sid_cm),
+                    value=sid_cm,
+                    step=1.0,
+                    help="Moves a fixed-area reference patch along +Z; its color encodes 1/r² (red near, yellow far).",
+                    key="ref_plane_z_cm",
+                )
 
             kap_fig = build_gxr_kap_3d(
                 target_material=right["target_material"],
@@ -355,37 +447,38 @@ def render_panel_centre(left: dict, right: dict, plot_styles: list[str]) -> None
                 kv_now=left["tube_voltage"],
                 kv_min=left["tube_voltage_min"],
                 kv_max=left["tube_voltage_max"],
-                mas_now= left["current_time_product"],
-                mas_max=left["tube_current_max"]*left["exposure_time_max"],
-                mass_atten_1=right["mass_atten_coeff_1"], 
-                dens_1=right["filter_1_density"], 
-                thick_1_mm=right["filter_1_thickness"],
-                mass_atten_2=right["mass_atten_coeff_2"], 
-                dens_2=right["filter_2_density"], 
-                thick_2_mm=right["filter_2_thickness"],
-                mass_atten_3=right["mass_atten_coeff_3"], 
-                dens_3=right["filter_3_density"], 
-                thick_3_mm=right["filter_3_thickness"],
+                mas_now=left["current_time_product"],
+                mas_max=left["tube_current_max"] * left["exposure_time_max"]/1000.0,
+                mass_atten_1=right["mass_atten_coeff_1"], dens_1=right["filter_1_density"], thick_1_mm=right["filter_1_thickness"],
+                mass_atten_2=right["mass_atten_coeff_2"], dens_2=right["filter_2_density"], thick_2_mm=right["filter_2_thickness"],
+                mass_atten_3=right["mass_atten_coeff_3"], dens_3=right["filter_3_density"], thick_3_mm=right["filter_3_thickness"],
                 field_area_cm2=area_cm2,
                 field_area_max_cm2=area_max_cm2,
                 sid_cm=sid_cm,
+                # NEW: wire the reference plane options
+                show_reference_plane=show_ref,
+                reference_plane_z_cm=ref_z_cm,          # <- use the slider you just defined
+                reference_plane_area_cm2=None,          # None => uses field_area_cm2; set a number to fix it
+                reference_z_max_cm=max(sid_max, sid_cm) # sets the colorbar "far" end (yellow)
             )
             st.plotly_chart(kap_fig, use_container_width=True, key="gxr-kap-3d", config={"displayModeBar": True})
 
+
         elif modality == "Mammography":
-            mam_fig = build_mammo_kedge_utilisation_figure(
-                target_material=right["target_material"],
-                filter_1_material=right["filter_1_material"],
-                energy_base=right["energy_base_array"],
-                kv_current=left["tube_voltage"],
-                kv_min=left["tube_voltage_min"],
-                kv_max=left["tube_voltage_max"],
-                mass_atten_1=right["mass_atten_coeff_1"], dens_1=right["filter_1_density"], thick_1=right["filter_1_thickness"],
-                mass_atten_2=right["mass_atten_coeff_2"], dens_2=right["filter_2_density"], thick_2=right["filter_2_thickness"],
-                mass_atten_3=right["mass_atten_coeff_3"], dens_3=right["filter_3_density"], thick_3=right["filter_3_thickness"],
-            )
-            mam_fig.update_layout(uirevision="mammo-secondary-view")
-            st.plotly_chart(mam_fig, use_container_width=True, key="fig-mammo-sec")          
+            # mam_fig = build_mammo_kedge_utilisation_figure(
+            #     target_material=right["target_material"],
+            #     filter_1_material=right["filter_1_material"],
+            #     energy_base=right["energy_base_array"],
+            #     kv_current=left["tube_voltage"],
+            #     kv_min=left["tube_voltage_min"],
+            #     kv_max=left["tube_voltage_max"],
+            #     mass_atten_1=right["mass_atten_coeff_1"], dens_1=right["filter_1_density"], thick_1=right["filter_1_thickness"],
+            #     mass_atten_2=right["mass_atten_coeff_2"], dens_2=right["filter_2_density"], thick_2=right["filter_2_thickness"],
+            #     mass_atten_3=right["mass_atten_coeff_3"], dens_3=right["filter_3_density"], thick_3=right["filter_3_thickness"],
+            # )
+            # mam_fig.update_layout(uirevision="mammo-secondary-view")
+            # st.plotly_chart(mam_fig, use_container_width=True, key="fig-mammo-sec")
+            st.text("Mammography secondary plot is not yet implemented.")          
 
         # --- pulsed fluoro square-wave under the main figure ---
         elif modality == "Fluoroscopy":
@@ -413,13 +506,22 @@ def render_panel_centre(left: dict, right: dict, plot_styles: list[str]) -> None
             pitch_val = float(left.get("ct_pitch") or 1.0)
             collimation_mm = float(left.get("ct_collimation_mm") or 80.0)
 
+            # ct_fig = build_ct_pitch_helix_figure(
+            #     tube_current_mA=float(left.get("tube_current") or 0.0),
+            #     rotation_time_s=rot_time_s,
+            #     pitch=pitch_val,
+            #     beam_width_mm=collimation_mm,  # <-- from slider
+            #     n_turns=6,                     # keep the nice multi-turn view
+            #     # radius_mm and axial_scale as you already set in the builder, or pass here if you expose them
+            # )
+
             ct_fig = build_ct_pitch_helix_figure(
                 tube_current_mA=float(left.get("tube_current") or 0.0),
                 rotation_time_s=rot_time_s,
                 pitch=pitch_val,
-                beam_width_mm=collimation_mm,  # <-- from slider
-                n_turns=6,                     # keep the nice multi-turn view
-                # radius_mm and axial_scale as you already set in the builder, or pass here if you expose them
+                beam_width_mm=collimation_mm,
+                scan_length_mm=float(left.get("scan_length_mm") or right["settings"].get("scan_length_default_mm", 1000.0)),
             )
             ct_fig.update_layout(uirevision="ct-helix-view")         # keep constant
+
             st.plotly_chart(ct_fig, use_container_width=True, config={"displayModeBar": False}, key="fig-ct")

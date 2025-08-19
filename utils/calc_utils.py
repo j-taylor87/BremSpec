@@ -3,119 +3,6 @@ from scipy.constants import speed_of_light
 from scipy.interpolate import interp1d
 from scipy.optimize import brentq
 
-# def add_characteristic_peaks(target_material, energy, energy_flux_normalised_filtered, tube_voltage):
-#     """
-#     Integrate characteristic X-ray peaks into an existing normalised Bremsstrahlung spectrum.
-
-#     This function adds specified characteristic peaks to an existing spectrum, normalises their intensities 
-#     relative to the spectrum"s maximum intensity and selected kV, and then sorts the combined energy and intensity arrays 
-#     for consistent plotting. It is particularly useful for visualising the complete spectrum including both 
-#     the Bremsstrahlung continuum and characteristic radiation peaks.
-
-#     Parameters:
-#     energy (ndarray): An array of energies in the existing spectrum.
-#     energy_flux_normalised_filtered (ndarray): An array of normalised energy flux values corresponding to "energy".
-#     energy_char (ndarray): An array of energies where characteristic peaks occur.
-#     flux_peaks (ndarray): An array of flux values for each characteristic peak.
-
-#     Returns:
-#     tuple of ndarray: A tuple containing two sorted ndarrays. The first array is the combined energy values (including characteristic peaks),
-#                       and the second array is the corresponding combined and normalised energy flux values.
-#     """
-    
-#     if target_material == "W (Z=74)":
-#         Z = 74
-
-#         # Characteristic x-ray energies for tungsten (W) in keV (a select few)
-#         # https://physics.nist.gov/PhysRefData/XrayTrans/Html/search.html
-#         # https://www.researchgate.net/publication/344795585_Simulation_of_X-Ray_Shielding_Effect_of_Different_Materials_Based_on_MCNP5#pf3
-        
-#         energy_char = np.array([
-#             57.98, # KL2
-#             59.32, # KL3
-#             67.25, # KM3
-#             69.10, # KN3
-#             # 8.97 # L2M2
-#         ]) 
-
-#         # Estimated relative energy flux of characteristic x-ray peaks
-#         # These values are just crude estimates of the heights of the peaks relative to the maximum energy flux
-#         flux_peaks = np.array([1.2, 1.4, 1.1, 1.01])
-
-#         # Manually position each annotation
-#         annotations = [
-#             # {"energy": energy_char[4], "peak": flux_peaks[4], "text": f"{energy_char[4]} keV", "xytext": (-20, 20)}, # L2M2
-#             {"energy": energy_char[1], "peak": flux_peaks[1], "text": f"<b>KL3:</b> {energy_char[1]} keV", "xytext": (-30, -50)}, # KL3
-#             {"energy": energy_char[2], "peak": flux_peaks[2], "text": f"<b>KM3:</b> {energy_char[2]} keV", "xytext": (30, -40)}, # KM3
-#             {"energy": energy_char[3], "peak": flux_peaks[3], "text": f"<b>KN3:</b> {energy_char[3]} keV", "xytext": (60, -20)},  # KN3
-#             {"energy": energy_char[0], "peak": flux_peaks[0], "text": f"<b>KL2:</b> {energy_char[0]} keV", "xytext": (-60, -30)}, # KL2
-#         ]
-
-#     elif target_material == "Rh (Z=45)":
-#         Z = 45
-
-#         energy_char = np.array([
-#             20.2, # KL3
-#             22.7, # KM2
-#         ]) 
-        
-#         flux_peaks = np.array([1.5, 1.1,])
-
-#         annotations = [
-#             {"energy": energy_char[0], "peak": flux_peaks[0], "text": f"<b>KL3:</b> {energy_char[0]} keV", "xytext": (-40, -50)}, # KL3
-#             {"energy": energy_char[1], "peak": flux_peaks[0], "text": f"<b>KM2:</b> {energy_char[1]} keV", "xytext": (60, -50)}, # KM2
-#         ]
-
-#     elif target_material == "Mo (Z=42)":
-#         Z = 42
-
-#         energy_char = np.array([
-#             17.5, # KL3
-#             19.6, # KM2
-#         ]) 
-        
-#         flux_peaks = np.array([1.5, 1.1,])
-
-#         annotations = [
-#             {"energy": energy_char[0], "peak": flux_peaks[0], "text": f"<b>KL3:</b> {energy_char[0]} keV", "xytext": (-50, -50)}, # KL3
-#             {"energy": energy_char[1], "peak": flux_peaks[0], "text": f"<b>KM2:</b> {energy_char[1]} keV", "xytext": (50, -50)}, # KM2
-#         ]
-
-#     # Filter out energies and their corresponding flux values above the tube_voltage
-#     energy_valid = energy[energy <= tube_voltage]
-#     flux_valid = energy_flux_normalised_filtered[energy <= tube_voltage]
-
-#     # Filter out characteristic peak energies above the tube_voltage
-#     peak_energies_valid = [en for en in energy_char if en <= tube_voltage]
-#     peak_fluxes_valid = [flux_peaks[i] for i, energy in enumerate(energy_char) if energy <= tube_voltage]
-
-#     # Normalise and adjust peak fluxes, capping them to the max_peak_flux_cap
-#     max_peak_flux_cap = 1.2
-#     peak_fluxes_normalised = [min(flux * max(flux_valid), max_peak_flux_cap) for flux in peak_fluxes_valid]
-
-#     # Normalise and adjust peak fluxes
-#     peak_fluxes_normalised = [flux * max(flux_valid) for flux in peak_fluxes_valid]
-
-#     for i, peak_energy in enumerate(peak_energies_valid):
-#         # Find the closest intensity in the valid Bremsstrahlung spectrum for each peak
-#         closest_index = np.abs(energy_valid - peak_energy).argmin()
-#         closest_intensity = flux_valid[closest_index]
-
-#         # Ensure peak intensity is not less than the Bremsstrahlung intensity at that energy
-#         if peak_fluxes_normalised[i] < closest_intensity:
-#             peak_fluxes_normalised[i] = closest_intensity
-        
-#         # Replace the energy and flux at the closest index
-#         energy_valid[closest_index] = peak_energy
-#         flux_valid[closest_index] = max(peak_fluxes_normalised[i], closest_intensity)
-
-#     # Sort the arrays
-#     sorted_indices = np.argsort(energy_valid)
-#     energy_combined = energy_valid[sorted_indices]
-#     flux_combined = flux_valid[sorted_indices]
-
-#     return energy_combined, flux_combined, annotations
-
 def add_characteristic_peaks(
     target_material,
     energy,
@@ -265,34 +152,109 @@ def add_characteristic_peaks(
 
     return energy_combined, flux_combined, annotations_output
 
-def calculate_auc_percentage(energy_flux_normalised_filtered, energy_valid, energy_lower_bound, energy_upper_bound, tube_voltage_max):
-    """
-    Calculate the AUC percentage for a filtered energy spectrum within a specified energy range.
+# def calculate_auc_percentage(energy_flux_normalised_filtered, energy_valid, energy_lower_bound, energy_upper_bound, tube_voltage_max):
+#     """
+#     Calculate the AUC percentage for a filtered energy spectrum within a specified energy range.
 
-    Parameters:
-    energy_flux_normalised_filtered (numpy.ndarray): normalised filtered energy flux.
-    energy_valid (numpy.ndarray): Valid energy values.
-    energy_lower_bound (float): Lower bound of the energy range of interest.
-    energy_upper_bound (float): Upper bound of the energy range of interest.
-    tube_voltage_max (float): Maximum tube voltage.
+#     Parameters:
+#     energy_flux_normalised_filtered (numpy.ndarray): normalised filtered energy flux.
+#     energy_valid (numpy.ndarray): Valid energy values.
+#     energy_lower_bound (float): Lower bound of the energy range of interest.
+#     energy_upper_bound (float): Upper bound of the energy range of interest.
+#     tube_voltage_max (float): Maximum tube voltage.
+
+#     Returns:
+#     auc_percentage (float): AUC percentage within the specified energy range.
+#     """
+#     # Indices for the energy range of interest
+#     lower_index = np.searchsorted(energy_valid, energy_lower_bound, side="left")
+#     upper_index = np.searchsorted(energy_valid, energy_upper_bound, side="right")
+
+#     # Calculate the AUC for the unfiltered spectrum at maximum technique factor values
+#     auc_unfiltered = 0.5 * tube_voltage_max * 1.0
+
+#     # Calculate AUC within the specified energy range
+#     auc = np.trapezoid(energy_flux_normalised_filtered[lower_index:upper_index], energy_valid[lower_index:upper_index])
+
+#     # Calculate AUC percentage
+#     auc_percentage = (auc / auc_unfiltered) * 100
+
+#     return auc_percentage
+
+def calculate_auc_percentage(energy_flux_normalised_filtered,
+                             energy_valid,
+                             energy_lower_bound,
+                             energy_upper_bound,
+                             tube_voltage_max):
+    """
+    Compute AUC% of the normalised, filtered spectrum over [energy_lower_bound, energy_upper_bound].
+    The reference (100%) is the area of the max-technique, unfiltered triangular Kramers spectrum
+    after peak normalisation: 0.5 * tube_voltage_max.
 
     Returns:
-    auc_percentage (float): AUC percentage within the specified energy range.
+        float: AUC percentage.
     """
-    # Indices for the energy range of interest
-    lower_index = np.searchsorted(energy_valid, energy_lower_bound, side="left")
-    upper_index = np.searchsorted(energy_valid, energy_upper_bound, side="right")
 
-    # Calculate the AUC for the unfiltered spectrum at maximum technique factor values
-    auc_unfiltered = 0.5 * tube_voltage_max * 1.0
+    # ---- sanitize inputs ----
+    energy_keV = np.asarray(energy_valid, dtype=float)
+    flux_relative = np.asarray(energy_flux_normalised_filtered, dtype=float)
 
-    # Calculate AUC within the specified energy range
-    auc = np.trapz(energy_flux_normalised_filtered[lower_index:upper_index], energy_valid[lower_index:upper_index])
+    finite_mask = np.isfinite(energy_keV) & np.isfinite(flux_relative)
+    energy_keV, flux_relative = energy_keV[finite_mask], flux_relative[finite_mask]
 
-    # Calculate AUC percentage
-    auc_percentage = (auc / auc_unfiltered) * 100
+    if energy_keV.size < 2:
+        return 0.0
 
+    # ensure nondecreasing energy grid
+    if not np.all(np.diff(energy_keV) >= 0):
+        sort_idx = np.argsort(energy_keV)
+        energy_keV = energy_keV[sort_idx]
+        flux_relative = flux_relative[sort_idx]
+
+    # ---- integration bounds (clamped to data domain) ----
+    range_start_keV = max(float(energy_lower_bound), float(energy_keV[0]))
+    range_end_keV   = min(float(energy_upper_bound), float(energy_keV[-1]))
+    if not (range_end_keV > range_start_keV):
+        return 0.0
+
+    left_idx  = int(np.searchsorted(energy_keV, range_start_keV, side="left"))
+    right_idx = int(np.searchsorted(energy_keV, range_end_keV,   side="right"))
+
+    # exact endpoint values via interpolation
+    flux_at_start = float(np.interp(range_start_keV, energy_keV, flux_relative))
+    flux_at_end   = float(np.interp(range_end_keV,   energy_keV, flux_relative))
+
+    # interior slice (may be empty)
+    energy_seg = energy_keV[left_idx:right_idx]
+    flux_seg   = flux_relative[left_idx:right_idx]
+
+    # prepend/replace start
+    if energy_seg.size == 0 or energy_seg[0] > range_start_keV + 1e-12:
+        energy_seg = np.insert(energy_seg, 0, range_start_keV)
+        flux_seg   = np.insert(flux_seg,   0, flux_at_start)
+    else:
+        energy_seg[0] = range_start_keV
+        flux_seg[0]   = flux_at_start
+
+    # append/replace end
+    if energy_seg[-1] < range_end_keV - 1e-12:
+        energy_seg = np.append(energy_seg, range_end_keV)
+        flux_seg   = np.append(flux_seg,   flux_at_end)
+    else:
+        energy_seg[-1] = range_end_keV
+        flux_seg[-1]   = flux_at_end
+
+    # ---- integrate filtered spectrum on the bounded segment ----
+    area_under_curve = float(np.trapezoid(flux_seg, energy_seg))
+
+    # ---- reference area (max-technique, unfiltered triangular spectrum after normalisation) ----
+    reference_area = 0.5 * float(tube_voltage_max)
+    if reference_area <= 0.0:
+        return 0.0
+
+    auc_percentage = (area_under_curve / reference_area) * 100.0
     return auc_percentage
+
 
 def calculate_effective_energy_and_hvl(energy_valid, spectrum, mu_en_array, density):
     """
@@ -336,7 +298,7 @@ def calculate_effective_energy_and_hvl(energy_valid, spectrum, mu_en_array, dens
     #    The result is normalised to the initial beam area (total spectrum intensity).
     def transmission_poly(t):
         transmitted = spectrum * np.exp(-mu_linear * t)  # intensity after filter, all energies
-        return np.trapz(transmitted, energy_valid) / np.trapz(spectrum, energy_valid)  # fraction transmitted
+        return np.trapezoid(transmitted, energy_valid) / np.trapezoid(spectrum, energy_valid)  # fraction transmitted
 
     # 3. Use root finding (brentq) to solve for the thickness (t_hvl) where
     #    the transmission drops to 50% (the formal HVL definition).
@@ -360,10 +322,10 @@ def calculate_effective_energy_and_hvl(energy_valid, spectrum, mu_en_array, dens
 def calculate_mean_energy(energy_valid, energy_flux_normalised_filtered):
 
     # Calculate the total flux
-    total_flux = np.trapz(energy_flux_normalised_filtered, energy_valid)
+    total_flux = np.trapezoid(energy_flux_normalised_filtered, energy_valid)
 
     # Calculate the weighted mean of the energy values
-    mean_energy = np.trapz(energy_flux_normalised_filtered * energy_valid, energy_valid) / total_flux
+    mean_energy = np.trapezoid(energy_flux_normalised_filtered * energy_valid, energy_valid) / total_flux
 
     return mean_energy
 
@@ -373,7 +335,7 @@ def calculate_median_energy(energy_valid, energy_flux_normalised_filtered):
     cumulative_energy_flux = np.cumsum(energy_flux_normalised_filtered * np.diff(energy_valid, prepend=0))
 
     # Normalise by the total AUC
-    normalised_cumulative_energy_flux = cumulative_energy_flux / np.trapz(energy_flux_normalised_filtered, energy_valid)
+    normalised_cumulative_energy_flux = cumulative_energy_flux / np.trapezoid(energy_flux_normalised_filtered, energy_valid)
 
     # Find the index for median energy
     indices = np.where(normalised_cumulative_energy_flux >= 0.5)[0]
@@ -405,6 +367,66 @@ def calculate_peak_energy(energy_valid, energy_flux_normalised_filtered):
     
     return peak_energy
 
+# def kramers_law(target_material, energy, tube_voltage, tube_voltage_max, tube_voltage_min,
+#                 tube_current=None, tube_current_max=None,
+#                 exposure_time=None, exposure_time_max=None,
+#                 current_time_product=None, current_time_product_max=None):
+
+#     # ----- target Z -----
+#     if   target_material == "W (Z=74)": Z = 74
+#     elif target_material == "Rh (Z=45)": Z = 45
+#     elif target_material == "Mo (Z=42)": Z = 42
+#     else:  # safe default
+#         Z = 74
+
+#     k_l = 1.0
+#     energy = np.asarray(energy, float)
+#     tube_voltage = float(tube_voltage)
+#     energy_valid = energy[energy <= tube_voltage]
+
+#     # ----- choose mode safely -----
+#     auto_requested   = (current_time_product is not None)
+#     manual_requested = (tube_current is not None) and (exposure_time is not None)
+
+#     if not auto_requested and not manual_requested:
+#         # Fallback so legacy callers don’t crash: assume 1 mAs auto
+#         current_time_product = 1.0
+#         current_time_product_max = 1.0
+#         auto_requested = True
+
+#     # ----- compute energy flux -----
+#     if auto_requested:
+#         current_time_product_mAs     = float(current_time_product)
+#         current_time_product_max_mAs = float(current_time_product_max) if current_time_product_max is not None else current_time_product_mAs
+
+#         energy_flux = (
+#             (k_l * Z * current_time_product_mAs) / (2.0 * np.pi * speed_of_light)
+#         ) * (tube_voltage - energy_valid)
+
+#         energy_flux_max = (
+#             (k_l * Z * current_time_product_max_mAs) / (2.0 * np.pi * speed_of_light)
+#         ) * (float(tube_voltage_max) - energy_valid)
+
+#     else:
+#         tube_current_mA          = float(tube_current)
+#         exposure_time_ms         = float(exposure_time)        # ms (your codebase uses ms)
+#         tube_current_max_mA      = float(tube_current_max)     if tube_current_max  is not None else tube_current_mA
+#         exposure_time_max_ms     = float(exposure_time_max)    if exposure_time_max is not None else exposure_time_ms
+
+#         energy_flux = (
+#             (k_l * Z * tube_current_mA * exposure_time_ms / 1000.0) / (2.0 * np.pi * speed_of_light)
+#         ) * (tube_voltage - energy_valid)
+
+#         energy_flux_max = (
+#             (k_l * Z * tube_current_max_mA * exposure_time_max_ms / 1000.0) / (2.0 * np.pi * speed_of_light)
+#         ) * (float(tube_voltage_max) - energy_valid)
+
+#     # ----- normalise and return -----
+#     denom = float(np.max(energy_flux_max)) if np.size(energy_flux_max) and np.max(energy_flux_max) > 0 else 1.0
+#     energy_flux_normalised = (energy_flux / denom) * (Z / 74.0)  # keep tungsten scaling
+
+#     return energy_valid, energy_flux_normalised
+
 def kramers_law(target_material, energy, tube_voltage, tube_voltage_max, tube_voltage_min,
                 tube_current=None, tube_current_max=None,
                 exposure_time=None, exposure_time_max=None,
@@ -412,6 +434,9 @@ def kramers_law(target_material, energy, tube_voltage, tube_voltage_max, tube_vo
     """
     exposure_time is interpreted as **milliseconds** in the manual branch (consistent with your codebase).
     current_time_product is **mAs** in the auto branch.
+
+    Normalises the spectrum to the *maximum-technique, unfiltered* case on the same energy grid so that
+    a max-kV, max-mAs, no-filter spectrum integrates to 100% in your AUC calculation.
     """
 
     # ----- target Z -----
@@ -438,36 +463,51 @@ def kramers_law(target_material, energy, tube_voltage, tube_voltage_max, tube_vo
 
     # ----- compute energy flux -----
     if auto_requested:
-        current_time_product_mAs     = float(current_time_product)
-        current_time_product_max_mAs = float(current_time_product_max) if current_time_product_max is not None else current_time_product_mAs
+        ctp_now = float(current_time_product)
+        # Robust fallback: if max is missing/zero, use current value
+        if (current_time_product_max is None) or (float(current_time_product_max) <= 0.0):
+            ctp_max = ctp_now
+        else:
+            ctp_max = float(current_time_product_max)
 
         energy_flux = (
-            (k_l * Z * current_time_product_mAs) / (2.0 * np.pi * speed_of_light)
+            (k_l * Z * ctp_now) / (2.0 * np.pi * speed_of_light)
         ) * (tube_voltage - energy_valid)
 
+        # "Max-technique" reference uses tube_voltage_max but the SAME energy grid
         energy_flux_max = (
-            (k_l * Z * current_time_product_max_mAs) / (2.0 * np.pi * speed_of_light)
+            (k_l * Z * ctp_max) / (2.0 * np.pi * speed_of_light)
         ) * (float(tube_voltage_max) - energy_valid)
 
     else:
-        tube_current_mA          = float(tube_current)
-        exposure_time_ms         = float(exposure_time)        # ms (your codebase uses ms)
-        tube_current_max_mA      = float(tube_current_max)     if tube_current_max  is not None else tube_current_mA
-        exposure_time_max_ms     = float(exposure_time_max)    if exposure_time_max is not None else exposure_time_ms
+        mA_now = float(tube_current)
+        ms_now = float(exposure_time)  # ms
+
+        # Robust fallbacks for max values
+        if (tube_current_max is None) or (float(tube_current_max) <= 0.0):
+            mA_max = mA_now
+        else:
+            mA_max = float(tube_current_max)
+
+        if (exposure_time_max is None) or (float(exposure_time_max) <= 0.0):
+            ms_max = ms_now
+        else:
+            ms_max = float(exposure_time_max)
 
         energy_flux = (
-            (k_l * Z * tube_current_mA * exposure_time_ms / 1000.0) / (2.0 * np.pi * speed_of_light)
+            (k_l * Z * mA_now * ms_now / 1000.0) / (2.0 * np.pi * speed_of_light)
         ) * (tube_voltage - energy_valid)
 
         energy_flux_max = (
-            (k_l * Z * tube_current_max_mA * exposure_time_max_ms / 1000.0) / (2.0 * np.pi * speed_of_light)
+            (k_l * Z * mA_max * ms_max / 1000.0) / (2.0 * np.pi * speed_of_light)
         ) * (float(tube_voltage_max) - energy_valid)
 
     # ----- normalise and return -----
-    denom = float(np.max(energy_flux_max)) if np.size(energy_flux_max) and np.max(energy_flux_max) > 0 else 1.0
+    denom = float(np.max(energy_flux_max)) if (np.size(energy_flux_max) and np.max(energy_flux_max) > 0.0) else 1.0
     energy_flux_normalised = (energy_flux / denom) * (Z / 74.0)  # keep tungsten scaling
 
     return energy_valid, energy_flux_normalised
+
 
 def relative_attenuation_mass_coeff(energy, density, filter_thickness, mass_atten_coeff, tube_voltage):
     """
