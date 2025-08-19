@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 import matplotlib.colors as mcolors
 
 # Custom functions
-from utils.get_modality_settings import get_modality_settings
+from utils.modality_settings import get_modality_settings
 from utils.select_attenuation_and_load_data import select_attenuation
 from utils.calc_utils import (
     add_characteristic_peaks,

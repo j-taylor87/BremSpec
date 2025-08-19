@@ -7,7 +7,7 @@ import streamlit as st
 # print("Streamlit version:", st.__version__)
 
 # Import UI components
-from ui.ui_options import modalities, plot_styles
+from ui.ui_options_and_styles import MODALITIES, PLOT_STYLES
 from ui.panel_left import render_panel_left
 from ui.panel_right import render_panel_right
 from ui.panel_centre import render_panel_centre
@@ -15,20 +15,20 @@ from ui.panel_centre import render_panel_centre
 # --- Fragments: only these parts re-run when their widgets change ---
 
 @st.fragment
-def left_and_plot(left_area, plot_area, modalities, plot_styles):
+def left_and_plot(left_area, plot_area, modalities, PLOT_STYLES):
     with left_area.container():
-        left = render_panel_left(modalities=modalities)
+        left = render_panel_left(modalities=MODALITIES)
     st.session_state["left"] = left  # share with other fragments
 
     # Only draw if right panel has run at least once
     right = st.session_state.get("right")
     if right:
         with plot_area.container():
-            render_panel_centre(left, right, plot_styles)
+            render_panel_centre(left, right, PLOT_STYLES)
 
 
 @st.fragment
-def right_and_plot(right_area, plot_area, data_dir, plot_styles):
+def right_and_plot(right_area, plot_area, data_dir, PLOT_STYLES):
     left = st.session_state.get("left")
     # If left hasn't run yet, we can't render right (needs filters/modality)
     with right_area.container():
@@ -39,7 +39,7 @@ def right_and_plot(right_area, plot_area, data_dir, plot_styles):
     st.session_state["right"] = right
 
     with plot_area.container():
-        render_panel_centre(left, right, plot_styles)
+        render_panel_centre(left, right, PLOT_STYLES)
 
 # Set data directory
 data_dir = "./data" # Works with GitHub
@@ -95,7 +95,7 @@ def render_main():
             border=True, 
             key="left-panel"
             ):
-            left = render_panel_left(modalities=modalities)
+            left = render_panel_left(modalities=MODALITIES)
 
     with col3:
         with st.container(
@@ -109,7 +109,7 @@ def render_main():
             # height=PANEL_H, 
             border=True, 
             key="centre-panel"):
-            render_panel_centre(left, right, plot_styles)
+            render_panel_centre(left, right, PLOT_STYLES)
 
 def app():
     render_main()

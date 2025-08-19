@@ -11,7 +11,7 @@ import matplotlib.colors as mcolors
 from scipy.interpolate import interp1d
 
 # Custom functions
-from utils.get_modality_settings import get_modality_settings
+from utils.modality_settings import get_modality_settings
 from utils.select_attenuation_and_load_data import select_attenuation
 from utils.calc_utils import (
     add_characteristic_peaks,

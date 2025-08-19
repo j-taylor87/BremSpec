@@ -405,67 +405,55 @@ def calculate_peak_energy(energy_valid, energy_flux_normalised_filtered):
     
     return peak_energy
 
-def kramers_law(target_material, energy, tube_voltage, tube_voltage_max, tube_voltage_min,
-                tube_current=None, tube_current_max=None,
-                exposure_time=None, exposure_time_max=None,
-                current_time_product=None, current_time_product_max=None):
+def kramers_law(target_material, energy, tube_voltage, tube_voltage_max, tube_voltage_min, tube_current=None, tube_current_max=None, exposure_time=None, exposure_time_max=None, current_time_product=None, current_time_product_max=None):
     """
-    exposure_time is interpreted as **milliseconds** in the manual branch (consistent with your codebase).
-    current_time_product is **mAs** in the auto branch.
+    Calculate the normalised Bremsstrahlung spectrum based on Kramers" law for a given target material and set of operational parameters.
+
+    This function computes the Bremsstrahlung radiation spectrum for a target material characterized by its atomic number. It considers different modes of operation (manual and automatic) based on the provided parameters. The output is the normalised energy flux of the radiation for energies up to the applied tube voltage.
+
+    Parameters:
+    Z (int): Atomic number of the target material.
+    energy (ndarray): Array of electron energies (in keV).
+    tube_voltage (float): Applied voltage setting the maximum electron energy for the protocol (in kV).
+    tube_voltage_max (float): Maximum voltage setting the maximum electron energy for the modality (in kV).
+    tube_current (float, optional): Tube current in mA (for manual mode).
+    exposure_time (float, optional): Exposure time in seconds (for manual mode).
+    current_time_product (float, optional): Current-time product in mAs (for automatic mode).
+    current_time_product_max (float, optional): Maximum current-time product in mAs (for the modality in automatic mode).
+
+    Returns:
+    tuple of ndarray: A tuple containing two ndarrays. The first array is the valid energies up to the tube voltage, 
+                      and the second array is the corresponding normalised energy flux of the radiation.
     """
 
-    # ----- target Z -----
-    if   target_material == "W (Z=74)": Z = 74
-    elif target_material == "Rh (Z=45)": Z = 45
-    elif target_material == "Mo (Z=42)": Z = 42
-    else:  # safe default
+    Z = None  # Initialize Z to None
+    if target_material == "W (Z=74)":
         Z = 74
+    
+    elif target_material == "Rh (Z=45)":
+        Z = 45
 
-    k_l = 1.0
-    energy = np.asarray(energy, float)
-    tube_voltage = float(tube_voltage)
+    elif target_material == "Mo (Z=42)":
+        Z = 42
+
+    k_l = 1.0  # Empirical constant
+    # Filter out energy values that are greater than the tube_voltage
     energy_valid = energy[energy <= tube_voltage]
 
-    # ----- choose mode safely -----
-    auto_requested   = (current_time_product is not None)
-    manual_requested = (tube_current is not None) and (exposure_time is not None)
-
-    if not auto_requested and not manual_requested:
-        # Fallback so legacy callers don’t crash: assume 1 mAs auto
-        current_time_product = 1.0
-        current_time_product_max = 1.0
-        auto_requested = True
-
-    # ----- compute energy flux -----
-    if auto_requested:
-        current_time_product_mAs     = float(current_time_product)
-        current_time_product_max_mAs = float(current_time_product_max) if current_time_product_max is not None else current_time_product_mAs
-
-        energy_flux = (
-            (k_l * Z * current_time_product_mAs) / (2.0 * np.pi * speed_of_light)
-        ) * (tube_voltage - energy_valid)
-
-        energy_flux_max = (
-            (k_l * Z * current_time_product_max_mAs) / (2.0 * np.pi * speed_of_light)
-        ) * (float(tube_voltage_max) - energy_valid)
-
+    # Calculate energy flux
+    if current_time_product is not None:
+        energy_flux = (k_l * Z * current_time_product) / (2.0 * np.pi * speed_of_light) * (tube_voltage - energy_valid) 
+        energy_flux_max = (k_l * Z * current_time_product_max) / (2.0 * np.pi * speed_of_light) * (tube_voltage_max - energy_valid) 
     else:
-        tube_current_mA          = float(tube_current)
-        exposure_time_ms         = float(exposure_time)        # ms (your codebase uses ms)
-        tube_current_max_mA      = float(tube_current_max)     if tube_current_max  is not None else tube_current_mA
-        exposure_time_max_ms     = float(exposure_time_max)    if exposure_time_max is not None else exposure_time_ms
+        energy_flux = (k_l * Z * tube_current * exposure_time / 1000.0) / (2.0 * np.pi * speed_of_light) * (tube_voltage - energy_valid)
+        energy_flux_max = (k_l * Z * tube_current_max * exposure_time_max / 1000.0) / (2.0 * np.pi * speed_of_light) * (tube_voltage_max - energy_valid)
 
-        energy_flux = (
-            (k_l * Z * tube_current_mA * exposure_time_ms / 1000.0) / (2.0 * np.pi * speed_of_light)
-        ) * (tube_voltage - energy_valid)
 
-        energy_flux_max = (
-            (k_l * Z * tube_current_max_mA * exposure_time_max_ms / 1000.0) / (2.0 * np.pi * speed_of_light)
-        ) * (float(tube_voltage_max) - energy_valid)
+    # Normalise energy flux
+    energy_flux_normalised = energy_flux / np.max(energy_flux_max) 
 
-    # ----- normalise and return -----
-    denom = float(np.max(energy_flux_max)) if np.size(energy_flux_max) and np.max(energy_flux_max) > 0 else 1.0
-    energy_flux_normalised = (energy_flux / denom) * (Z / 74.0)  # keep tungsten scaling
+    # Scale normalised energy flux relative to Tungsten, to show decreased X-ray production for other targets
+    energy_flux_normalised = energy_flux_normalised* Z/74
 
     return energy_valid, energy_flux_normalised
 

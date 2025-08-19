@@ -25,11 +25,11 @@ def render_panel_right(filters: list[str], data_dir: str, modality: str) -> dict
 
     # Colours for each material
     colour_material_1 = "red"
-    colour_material_1a = "orange"
+    colour_material_1a = "red"
     colour_material_2 = "green"
-    colour_material_2a = "limegreen"
-    colour_material_3 = "violet"
-    colour_material_3a = "fuchsia"
+    colour_material_2a = "green"
+    colour_material_3 = "darkviolet"
+    colour_material_3a = "darkviolet"
 
     # Attenuator Materials
     with st.container():

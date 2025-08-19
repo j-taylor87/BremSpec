@@ -1,7 +1,7 @@
 # figure.py
 import numpy as np
 import plotly.graph_objects as go
-import matplotlib.colors as mcolors
+# import matplotlib.colors as mcolors
 from scipy.interpolate import PchipInterpolator
 
 from utils.calc_utils import (
@@ -12,58 +12,73 @@ from utils.calc_utils import (
     calculate_peak_energy,
     calculate_compton_scatter_spectrum,
 )
+from ui.ui_options_and_styles import rgba
+
+WIDTH_FIGURE = 1300
+HEIGHT_FIGURE = 574
 
 # Tunables for plotting quality vs. speed
-_N_BASE_ANCHORS = 2500   # ~how many adaptive "anchor" points to keep (fewer -> faster)
-_MAX_PLOT_POINTS = 5000 # upper bound for final drawn points (dynamic target below)
+MAX_PLOT_POINTS = 5000 # upper bound for final drawn points (dynamic target below)
 
-
-def _smooth_for_plot(x, y, anchors=None, n_base=_N_BASE_ANCHORS, fig_width_px=1300):
+def _smooth_for_plot(
+    x_data,
+    y_data,
+    anchors=None,
+    fig_width_px=1300,
+    max_plot_points=MAX_PLOT_POINTS,
+):
     """
-    Make a smooth, non-negative curve for plotting from (x,y) without changing physics:
-      1) build a dense reference with PCHIP on log(y)
-      2) choose ~n_base anchors using a curvature-weighted arc-length in log-space
-      3) densify to ~1.2x figure width for anti-aliasing
-    Returns (x_plot, y_plot).
+    Smooth the (x, y) data for plotting using PCHIP on log(y) and return a dense grid.
+
+    - Keeps physics intact (no renormalisation).
+    - Uses a uniform sampling grid sized to the figure, and
+      **merges the exact anchor x positions** (e.g., characteristic-peak energies)
+      so the drawn curve passes through peak tops.
+
+    Returns
+    -------
+    x_plot : ndarray
+    y_plot : ndarray
     """
-    x = np.asarray(x, float)
-    y = np.asarray(y, float)
-    m = np.isfinite(x) & np.isfinite(y) & (y > 0)
-    x = x[m]; y = y[m]
-    if x.size < 2: 
-        return x, y
+    # Sanitize & sort
+    x_source = np.asarray(x_data, dtype=float)
+    y_source = np.asarray(y_data, dtype=float)
+    valid = np.isfinite(x_source) & np.isfinite(y_source) & (y_source > 0.0)
+    x_source = x_source[valid]
+    y_source = y_source[valid]
+    if x_source.size < 2:
+        return x_source, np.clip(y_source, 0.0, None)
 
-    order = np.argsort(x)
-    x, y = x[order], y[order]
+    order = np.argsort(x_source)
+    x_source = x_source[order]
+    y_source = y_source[order]
 
-    # PCHIP on log(y) avoids negatives & ringing
-    p_log = PchipInterpolator(x, np.log(np.clip(y, 1e-12, None)))
+    # Interpolator in log-space (avoids negatives & ringing)
+    eps = 1e-12
+    pchip_log = PchipInterpolator(x_source, np.log(np.clip(y_source, eps, None)))
 
-    # Dense reference for measuring slope/curvature
-    xd = np.linspace(x[0], x[-1], max(1024, len(x)))
-    yd_log = p_log(xd)
-    dy = np.gradient(yd_log, xd)
-    d2y = np.gradient(dy, xd)
+    # Base uniform grid sized to figure width
+    n_plot = int(min(max_plot_points, max(1000, int(fig_width_px * 1.2))))
+    x_plot_uniform = np.linspace(x_source[0], x_source[-1], n_plot)
 
-    # Curvature-weighted arc-length (coeffs tuned for smoothness)
-    w = np.sqrt(1.0 + (4.0 * dy)**2 + (18.0 * d2y)**2)
-    s = np.cumsum(np.maximum(w, 1e-12))
-    s = (s - s[0]) / (s[-1] - s[0])
-
-    # Choose anchors uniformly in this metric
-    x_base = np.interp(np.linspace(0, 1, n_base), s, xd)
-
-    # Ensure characteristic-peak energies are honoured
+    # Merge exact anchor x's so we sample at characteristic-peak energies
     if anchors is not None and len(anchors):
-        x_base = np.unique(np.clip(np.concatenate([x_base, np.asarray(anchors, float)]), x[0], x[-1]))
+        anchor_x = np.asarray(anchors, dtype=float)
+        anchor_x = anchor_x[(anchor_x >= x_source[0]) & (anchor_x <= x_source[-1])]
+        x_plot = np.unique(np.concatenate([x_plot_uniform, anchor_x]))
 
-    y_base = np.exp(p_log(x_base))
+        # If over the cap, decimate ONLY the uniform points; always keep the anchors
+        excess = x_plot.size - max_plot_points
+        if excess > 0:
+            keep_idx = np.linspace(0, x_plot_uniform.size - 1,
+                                   max(1, max_plot_points - anchor_x.size),
+                                   dtype=int)
+            x_plot = np.unique(np.concatenate([x_plot_uniform[keep_idx], anchor_x]))
+            x_plot.sort()
+    else:
+        x_plot = x_plot_uniform
 
-    # Final densify roughly to pixel width (anti-alias), capped
-    n_plot = int(min(_MAX_PLOT_POINTS, max(1000, fig_width_px * 12 // 10)))
-    x_plot = np.linspace(x_base[0], x_base[-1], n_plot)
-    y_plot = np.exp(PchipInterpolator(x_base, np.log(np.clip(y_base, 1e-12, None)))(x_plot))
-
+    y_plot = np.exp(pchip_log(x_plot))
     return x_plot, np.clip(y_plot, 0.0, None)
 
 
@@ -114,56 +129,87 @@ def build_spectrum_figure(
     scatter_density,
     scatter_thickness,
     scatter_y_scale,
+    apply_axis_ranges=False,
+    plot_energy_override=None,
+    plot_flux_override=None,
+    peak_annotations=None,
+    is_fluoro=False,
 ):
     fig = go.Figure()
 
-    # Prepare a smooth plotting curve from the physical result (display only)
-    # If characteristic peaks are being shown, include their energies as anchors so the line touches them.
-    anchors = []
+    # --- Build the plotting spectrum (DISPLAY ONLY) ---
+    if (plot_energy_override is not None) and (plot_flux_override is not None):
+        # Use the arrays that already have the characteristic peaks inserted
+        plot_energy = np.asarray(plot_energy_override, float)
+        plot_flux   = np.asarray(plot_flux_override, float)
+        annotations = list(peak_annotations or [])
+    else:
+        # Fallback: derive from the physics arrays (kept for backwards-compat)
+        plot_energy = np.asarray(energy_valid, float)
+        plot_flux   = np.asarray(energy_flux_normalised_filtered, float)
+        annotations = []
+        if show_characteristic_xray_peaks:
+            # Only do this if the caller didn't provide overrides
+            plot_energy, plot_flux, annotations = add_characteristic_peaks(
+                target_material, energy_valid, energy_flux_normalised_filtered, tube_voltage
+            )
+
+    # Tell the smoother to preserve the inserted peaks
+    anchor_energies = [a["energy"] for a in annotations if a["energy"] <= tube_voltage]
+    plot_x, plot_y = _smooth_for_plot(plot_energy, plot_flux, anchors=anchor_energies)
+
     if show_characteristic_xray_peaks:
-        # We only need the annotations/energies; don't replace the physics arrays.
-        _, _, _annotations = add_characteristic_peaks(
+        # Important: actually merge peaks into the spectrum we draw
+        plot_energy, plot_flux, annotations = add_characteristic_peaks(
             target_material, energy_valid, energy_flux_normalised_filtered, tube_voltage
         )
-        anchors = [a["energy"] for a in _annotations if a["energy"] <= tube_voltage]
+        peak_energies = [a["energy"] for a in annotations if a["energy"] <= tube_voltage]
+    else:
+        peak_energies = []
 
-    plot_x, plot_y = _smooth_for_plot(energy_valid, energy_flux_normalised_filtered, anchors=anchors)
+    # Smooth ONLY the spectrum we’re going to plot; ensure the grid contains peak energies
+    plot_x, plot_y = _smooth_for_plot(plot_energy, plot_flux, anchors=peak_energies)
 
-    # base spectrum
-    fig.add_trace(go.Scatter(
-        x=plot_x, y=plot_y, mode='lines',
-        line=dict(color=selected_colour, width=1.8, shape="spline", smoothing=0.6),
-        name="Spectrum"
-    ))
-
-    # characteristic peak annotations (labels/arrows only)
-    if show_characteristic_xray_peaks:
-        for ann in _annotations:
+    # characteristic peak annotations (arrow tip at TRUE peak height)
+    if show_characteristic_xray_peaks and annotations:
+        for ann in annotations:
             if ann["energy"] <= tube_voltage:
-                y_val = float(np.interp(ann["energy"], plot_x, plot_y))
+                # Prefer the exact peak height if the caller provided it; otherwise interpolate
+                y_tip = float(ann.get("peak", np.interp(ann["energy"], plot_x, plot_y)))
                 fig.add_annotation(
                     x=ann["energy"],
-                    y=y_val * 0.95,
+                    y=y_tip,
                     text=ann["text"],
                     showarrow=True,
                     arrowhead=3,
                     arrowsize=1,
                     arrowwidth=1.2,
+                    standoff=6,
                     ax=ann["xytext"][0],
                     ay=ann["xytext"][1],
                     font=dict(size=16),
                 )
 
-    # fill under curve
-    r, g, b = [int(255 * c) for c in mcolors.to_rgb(selected_colour)]
-    fill_color_rgba = f"rgba({r},{g},{b},0.2)"
-    # filled area
+    # base fill
+    fill_rgba = rgba(selected_colour, 0.20)
     fig.add_trace(go.Scatter(
-        x=plot_x, y=plot_y, mode='lines', fill='tozeroy',
-        line=dict(color=selected_colour, width=1.8, shape="spline", smoothing=0.6),
-        fillcolor=fill_color_rgba, name="Filled Area"
+        x=plot_x, y=plot_y,
+        mode="lines",
+        line=dict(width=0),
+        fill="tozeroy",
+        fillcolor=fill_rgba,
+        hoverinfo="skip",
+        name="Filled Area",
     ))
 
+    # spectrum line
+    fig.add_trace(go.Scatter(
+        x=plot_x, y=plot_y,
+        mode="lines",
+        line=dict(color=selected_colour, width=1.8),
+        name="Spectrum",
+    ))
+        
     # effective energy + HVL (material 1)
     if show_effective_energy:
         eff_e, t_hvl = calculate_effective_energy_and_hvl(
@@ -216,10 +262,10 @@ def build_spectrum_figure(
         fig.add_trace(go.Scatter(x=energy_valid, y=mass_atten_coeff_3_valid, mode='lines',
                                  line=dict(color=colour_material_3a, width=1.5, dash="dot"), name="Attenuation Filter 3", yaxis="y2"))
 
-    # AUC annotation (unchanged)
+    # AUC annotation (label changes for fluoro)
     fig.add_annotation(
         x=0.95, y=1.05,
-        text=f"Total Energy = {auc_percentage:.2f}%",
+        text=f"{'Total Energy per second' if is_fluoro else 'Total Energy'} = {auc_percentage:.2f}%",
         showarrow=False, xref="paper", yref="paper",
         font=dict(color=selected_colour, size=25, family="sans-serif")
     )
@@ -247,46 +293,74 @@ def build_spectrum_figure(
         ))
         # (Optional HVL for scatter remains handled in panel_centre if enabled.)
 
-    # layout
+    # # layout
+    # fig.update_layout(
+    #     xaxis=dict(
+    #         title="Photon Energy E (keV)",
+    #         range=[0, float(x_axis_max)],
+    #         # dtick=5,
+    #         showline=True,
+    #         linewidth=3,
+    #         showgrid=False,
+    #         title_font=dict(size=20),
+    #         tickfont=dict(size=18),
+    #     ),
+    #     yaxis=dict(
+    #         title=("Relative Energy Flux Rate Ψ/s" if is_fluoro else "Relative Energy Flux Ψ"),
+    #         range=[0, y_axis_max],
+    #         # dtick=0.1,
+    #         showline=True,
+    #         linewidth=3,
+    #         showgrid=False,
+    #         title_font=dict(size=22),
+    #         tickfont=dict(size=18),
+    #     ),
+    #     yaxis2=dict(
+    #         title="Mass Attenuation Coefficient μ (cm²/g)",
+    #         overlaying='y',
+    #         side='right',
+    #         type='log',
+    #         showgrid=False,
+    #         title_font=dict(size=22),
+    #         tickfont=dict(size=18),
+    #     ),
+    #     showlegend=False,
+    #     template=selected_style,
+    #     width=WIDTH_FIGURE,
+    #     height= HEIGHT_FIGURE,
+    #     uirevision='constant',
+    # )
+
+    # -------- LAYOUT (make axes persistent) --------
     fig.update_layout(
         xaxis=dict(
             title="Photon Energy E (keV)",
-            range=[0, float(x_axis_max)],
-            dtick=10,
-            showline=True,
-            linewidth=3,
-            showgrid=False,
-            title_font=dict(size=20),
-            tickfont=dict(size=18),
+            range=[0.0, float(x_axis_max)],            # <-- fixed, no autoscale
+            showline=True, linewidth=3, showgrid=False,
+            title_font=dict(size=20), tickfont=dict(size=18),
+            # uirevision optional here; fixed ranges will dominate
         ),
         yaxis=dict(
-            title="Relative Energy Flux Ψ",
-            range=[0, y_axis_max],
-            dtick=0.1,
-            showline=True,
-            linewidth=3,
-            showgrid=False,
-            title_font=dict(size=22),
-            tickfont=dict(size=18),
+            title=("Relative Energy Flux Rate Ψ/s" if is_fluoro else "Relative Energy Flux Ψ"),
+            range=[0.0, float(y_axis_max)],            # <-- fixed, no autoscale
+            showline=True, linewidth=3, showgrid=False,
+            title_font=dict(size=22), tickfont=dict(size=18),
         ),
         yaxis2=dict(
             title="Mass Attenuation Coefficient μ (cm²/g)",
-            overlaying='y',
-            side='right',
-            type='log',
-            showgrid=False,
-            title_font=dict(size=22),
-            tickfont=dict(size=18),
+            overlaying='y', side='right', type='log', showgrid=False,
+            title_font=dict(size=22), tickfont=dict(size=18),
         ),
         showlegend=False,
         template=selected_style,
-        width=1300,
-        height= 574,
-        uirevision='constant',
+        width=WIDTH_FIGURE,
+        height=HEIGHT_FIGURE,
+        uirevision="main-spectrum",                   
     )
 
+    # Show grid if requested
     if show_grid:
         fig.update_xaxes(showgrid=True)
         fig.update_yaxes(showgrid=True)
-
+    
     return fig

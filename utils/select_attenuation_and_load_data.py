@@ -128,7 +128,7 @@ def select_attenuation(filter_number, filter_material_selection, data_dir, modal
                                      min_value=0.0, 
                                      max_value=0.1, 
                                      step=1E-6, 
-                                     value=0.0, 
+                                     value=0.01, 
                                      key=f"filter_{filter_number}_thickness_Rh",
                                      label_visibility="collapsed")
         file_name = "interpolated_NIST_mass_attenuation_coeff_Rh.csv"

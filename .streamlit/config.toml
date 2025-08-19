@@ -1,0 +1,3 @@
+[theme]
+# This scales label text and most widget chrome (incl. slider readouts) app-wide
+baseFontSize = 18  # px; Streamlit default is 16

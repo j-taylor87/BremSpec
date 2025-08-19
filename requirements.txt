@@ -1,6 +1,10 @@
-streamlit
-matplotlib
-numpy
-pandas
-plotly
-scipy
+# requirements.txt for BremSpec (generated 2025-08-18)
+# Pinned versions verified as latest stable as of generation date.
+streamlit==1.48.1
+numpy==2.3.0
+scipy==1.16.1
+pandas==2.3.1
+matplotlib==3.10.5
+plotly==6.3.0
+
+# Python 3.9–3.13 supported by these pins
